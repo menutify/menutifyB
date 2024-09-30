@@ -4,6 +4,7 @@ import cors from 'cors'
 import userRoute from '../routes/user.routes.js'
 //bd
 import conexionDB from '../database/dbConexion.js'
+import sqConexion from '../database/sqConexion.js'
 
 class Server {
   constructor() {
@@ -12,7 +13,8 @@ class Server {
     // definimos los puertos
     this.port = process.env.PORT || '3000'
     //Conectar base de datos
-    conexionDB()
+    // conexionDB()
+    this.initDB()
     // Middlewares
     this.app.use(express.static('src/public'))
     this.app.use(express.json())
@@ -22,7 +24,16 @@ class Server {
   }
 
   //metodo asincrono de coneccion con BD
- 
+
+  async initDB() {
+    try {
+      await sqConexion.authenticate()
+      console.log('first')
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
   // Iniciar API
   listen() {
     this.app.listen(this.port, () => {
