@@ -5,6 +5,8 @@ import userRoute from '../routes/user.routes.js'
 //bd
 import conexionDB from '../database/dbConexion.js'
 import sqConexion from '../database/sqConexion.js'
+//models
+import { createModels } from '../Models/allModels.js'
 
 class Server {
   constructor() {
@@ -27,8 +29,12 @@ class Server {
 
   async initDB() {
     try {
+      //autenticando conexion
       await sqConexion.authenticate()
-      console.log('first')
+      //creando modelos
+      createModels(sqConexion)
+      // sincronizando modelos, evitando la sustitucion
+      await sqConexion.sync({ force: false })
     } catch (e) {
       console.log(e)
     }

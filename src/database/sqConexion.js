@@ -9,7 +9,11 @@ const port = 3306
 const sqConexion = new Sequelize(database, username, password, {
   host: host,
   port: port,
-  dialect: 'mysql'
+  dialect: 'mysql',
+  //permite que las tablas creadas tengan el mismmo nombre del modelo
+  define: {
+    freezeTableName: true
+  }
 })
 
 export default sqConexion
