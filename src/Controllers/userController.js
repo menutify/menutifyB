@@ -1,12 +1,13 @@
-import sqConexion from '../database/sqConexion.js'
+import { models } from '../Models/allModels.js'
 
-export const getUser = async (req, res) => {
+const getUser = async (req, res) => {
   try {
-    const { email } = req.query
+    
+    const { email,password } = req.query
 
     if (!email) return res.status(204).json({ msg: 'email no ingresado' })
 
-    const user = await sqConexion.define().findOne({ where: { email } })
+    const user = await models.user.count({ where: { email,password } })
 
     if (!user) res.status(404).json({ msg: false })
 
@@ -19,23 +20,25 @@ export const getUser = async (req, res) => {
   }
 }
 
-export const postUser = async (req, res) => {
+const postUser = async (req, res) => {
   try {
     const { name, email, password } = req.body
 
-    const user = await sqConexion.define().findOne({ where: { email } })
+    const user = await models.user.count({ where: { email } })
+    if (user) return res.status(226).json({ msg: 'correo no disponible' })
 
-    if (user) res.status(226).json({msg:'correo no disponible'})
+    const { id } = await models.user.create({ name, email, password })
 
-    
+    return res.status(200).json({ msg: true, id })
   } catch (error) {
     res.status(400).json({
-      data: 'Se presento un error al crear la lista de Usuarios',
+      data: 'Se presento un error al crear el Usuario',
       error
     })
   }
 }
 
 export const userControllerFunctions = {
-  getUser
+  getUser,
+  postUser
 }

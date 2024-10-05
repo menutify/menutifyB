@@ -2,11 +2,10 @@ import express from 'express'
 import cors from 'cors'
 //routes
 import userRoute from '../routes/user.routes.js'
-//bd
-import conexionDB from '../database/dbConexion.js'
-import sqConexion from '../database/sqConexion.js'
-//models
-import { createModels } from '../Models/allModels.js'
+import subRouter from '../routes/sub.routes.js'
+
+//models and bd conexion
+import { models } from '../Models/allModels.js'
 
 class Server {
   constructor() {
@@ -20,6 +19,7 @@ class Server {
     // Middlewares
     this.app.use(express.static('src/public'))
     this.app.use(express.json())
+    this.app.use('/api/sub', subRouter)
     this.app.use(cors())
     // Rutas de la aplicacion
     this.app.use('/api/user', userRoute)
@@ -30,11 +30,19 @@ class Server {
   async initDB() {
     try {
       //autenticando conexion
-      await sqConexion.authenticate()
+      await models.sqConexion.authenticate()
       //creando modelos
-      createModels(sqConexion)
+      models.categories
+      models.favs
+      models.user
+      models.food
+      models.invitedCode
+      models.logo
+      models.menu
+      models.subs
+      models.url
       // sincronizando modelos, evitando la sustitucion
-      await sqConexion.sync({ force: false })
+      await models.sqConexion.sync({ force: false })
     } catch (e) {
       console.log(e)
     }

@@ -13,7 +13,8 @@ const sqConexion = new Sequelize(database, username, password, {
   //permite que las tablas creadas tengan el mismmo nombre del modelo
   define: {
     freezeTableName: true
-  }
+  },
+  // logging: false
 })
 
 export default sqConexion
