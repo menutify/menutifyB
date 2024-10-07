@@ -1,4 +1,4 @@
-import { DataTypes,Sequelize } from 'sequelize'
+import { DataTypes, Sequelize } from 'sequelize'
 import { defaultValueSchemable, toDefaultValue } from 'sequelize/lib/utils'
 import sqConexion from '../database/sqConexion.js'
 
@@ -73,13 +73,14 @@ const menu = sqConexion.define('menu', {
     autoIncrement: true,
     primaryKey: true
   },
-  description: {
-    type: DataTypes.TEXT,
-    allowNull: false,
-    defaultValue: ''
-  },
+
   id_user: {
     type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  bg_color: { type: DataTypes.BOOLEAN, defaultValue: false },
+  name: {
+    type: DataTypes.STRING,
     allowNull: false
   }
 })
