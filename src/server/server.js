@@ -3,7 +3,8 @@ import cors from 'cors'
 //routes
 import userRoute from '../routes/user.routes.js'
 import subRouter from '../routes/sub.routes.js'
-
+import menuRouter from '../routes/menu.routes.js'
+import logoRouter from '../routes/logo.routes.js'
 //models and bd conexion
 import { models } from '../Models/allModels.js'
 
@@ -19,10 +20,12 @@ class Server {
     // Middlewares
     this.app.use(express.static('src/public'))
     this.app.use(express.json())
-    this.app.use('/api/sub', subRouter)
     this.app.use(cors())
     // Rutas de la aplicacion
     this.app.use('/api/user', userRoute)
+    this.app.use('/api/sub', subRouter)
+    this.app.use('/api/menus', menuRouter)
+    this.app.use('/api/logos', logoRouter)
   }
 
   //metodo asincrono de coneccion con BD

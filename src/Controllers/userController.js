@@ -2,16 +2,18 @@ import { models } from '../Models/allModels.js'
 
 const getUser = async (req, res) => {
   try {
-    
-    const { email,password } = req.query
+    // const { email, password } = req.query
 
-    if (!email) return res.status(204).json({ msg: 'email no ingresado' })
+    // if (!email) return res.status(204).json({ msg: 'email no ingresado' })
 
-    const user = await models.user.count({ where: { email,password } })
+    // const user = await models.user.count({ where: { email, password } })
 
-    if (!user) res.status(404).json({ msg: false })
+    // if (!user) return res.status(404).json({ msg: false })
 
-    return res.status(200).json({ msg: true })
+    // return res.status(200).json({ msg: true })
+
+    const users = await models.user.findAll()
+    return res.json( users)
   } catch (error) {
     res.status(400).json({
       data: 'Se presento un error al obtener la lista de Usuarios',
@@ -22,7 +24,7 @@ const getUser = async (req, res) => {
 
 const postUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body
+    const { name, email, password, pay } = req.body
 
     const user = await models.user.count({ where: { email } })
     if (user) return res.status(226).json({ msg: 'correo no disponible' })

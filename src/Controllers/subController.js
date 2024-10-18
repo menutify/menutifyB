@@ -3,7 +3,7 @@ import { addDaysToDate } from '../helper/calculationHelpers.js'
 
 const getSubs = async (req, res) => {
   try {
-    return res.status(200).json(await models.subs.findAll())
+    return res.status(200).json({ subs: await models.subs.findAll() })
   } catch (error) {
     console.log(error)
     return res
