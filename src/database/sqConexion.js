@@ -14,7 +14,7 @@ const sqConexion = new Sequelize(database, username, password, {
   define: {
     freezeTableName: true
   },
-  // logging: false
+  logging: false
 })
 
 export default sqConexion

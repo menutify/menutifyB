@@ -29,10 +29,17 @@ const getMenus = async (req, res) => {
 const getMenusById = async (req, res) => {
   //todo obtener el menu por id independientemente del usuario
   try {
-    const { id } = req.params
+    const { id: id_menu } = req.params
 
     // console.log({ id })
-    const menuData = await models.menus.findByPk(id)
+    const menuData = await models.menus.findByPk(id_menu, {
+      include: [
+        {
+          model: models.categories,
+          attributes: ['id', 'name']
+        }
+      ]
+    })
 
     if (!menuData)
       return res.status(400).json({ msg: 'problema al obtener el menu' })
@@ -50,7 +57,7 @@ const postMenus = async (req, res) => {
   try {
     // 1- obtener datos de creacion de menu
     // const {id_user,name,bg_color,description=''}=req.body
-    const {id_user} = req.query
+    const { id_user } = req.query
     const data = req.body
 
     // 3- registrarlo en la base de datos
@@ -70,7 +77,13 @@ const postMenus = async (req, res) => {
 
 const putMenus = async (req, res) => {}
 
-const deleteMenus = async (req, res) => {}
+const deleteMenus = async (req, res) => {
+  const { id } = req.params
+  console.log({ id })
+  await models.menus.destroy({ where: { id } })
+
+  return res.status(200).json({ msg: 'ok' })
+}
 
 export const menuController = {
   getMenus,

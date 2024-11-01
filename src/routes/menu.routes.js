@@ -7,6 +7,6 @@ menuRouter.get('/', menuController.getMenus)
 menuRouter.get('/:id', menuController.getMenusById)
 menuRouter.post('/', menuController.postMenus)
 menuRouter.put('/:id', menuController.putMenus)
-menuRouter.delete(':id', menuController.deleteMenus)
+menuRouter.delete('/:id', menuController.deleteMenus)
 
 export default menuRouter

@@ -28,6 +28,20 @@ const user = sqConexion.define(
     password: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    new: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true
+    },
+    subActive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    session:{
+      type:DataTypes.ENUM,
+      values: ['normal', 'facebook', 'google'],
+      defaultValue:'normal'
     }
   },
   {
@@ -53,11 +67,12 @@ const invitedCode = sqConexion.define('code', {
   used: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
+    
     defaultValue: false
   }
 })
 
-user.hasMany(invitedCode, { foreignKey: 'id_user' }) // Un usuario puede tener muchos códigos de invitación
+user.hasMany(invitedCode, { foreignKey: 'id_user', onDelete: 'CASCADE' }) // Un usuario puede tener muchos códigos de invitación
 invitedCode.belongsTo(user, { foreignKey: 'id_user' }) // Un código de invitación pertenece a un usuario
 
 const subs = sqConexion.define('subs', {
@@ -118,7 +133,7 @@ const menus = sqConexion.define('menus', {
   }
 })
 
-user.hasMany(menus, { foreignKey: 'id_user' })
+user.hasMany(menus, { foreignKey: 'id_user', onDelete: 'CASCADE' })
 menus.belongsTo(user, { foreignKey: 'id_user' })
 
 // const url = sqConexion.define('url', {
@@ -163,7 +178,7 @@ const categories = sqConexion.define('categories', {
   }
 })
 
-menus.hasMany(categories, { foreignKey: 'id_menu' })
+menus.hasMany(categories, { foreignKey: 'id_menu', onDelete: 'CASCADE' })
 categories.belongsTo(menus, { foreignKey: 'id_menu' })
 
 const logo = sqConexion.define('logo', {
@@ -187,7 +202,7 @@ const logo = sqConexion.define('logo', {
   }
 })
 
-menus.hasMany(logo, { foreignKey: 'id_menu' })
+menus.hasMany(logo, { foreignKey: 'id_menu', onDelete: 'CASCADE' })
 logo.belongsTo(menus, { foreignKey: 'id_menu' })
 
 const food = sqConexion.define('food', {
@@ -229,10 +244,10 @@ const food = sqConexion.define('food', {
   }
 })
 
-menus.hasMany(food, { foreignKey: 'id_menu' })
+menus.hasMany(food, { foreignKey: 'id_menu', onDelete: 'CASCADE' })
 food.belongsTo(menus, { foreignKey: 'id_menu' })
 
-categories.hasMany(food, { foreignKey: 'id_cats' })
+categories.hasMany(food, { foreignKey: 'id_cats', onDelete: 'CASCADE' })
 food.belongsTo(categories, { foreignKey: 'id_cats' })
 
 //   console.log(user === sqConexion.models.user)

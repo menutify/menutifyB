@@ -43,7 +43,7 @@ const putSub = async (req, res) => {
     //tenemos que verificar el pago
     if (!payVerification)
       return res.status(404).json({ msg: 'no se proceso el pago' })
-    console.log('probando .-1')
+    
     // obtenemos los datos de la sub del usuario
     const { dataValues } = await models.subs.findOne({
       where: { id_user: id }

@@ -1,11 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-</head>
-<body>
+  </head>
+  <body>
     HOLA SOY EL SERVIDOR
-</body>
+    <div
+      id="g_id_onload"
+      data-client_id="470881460994-mrovgi9mk8bmr56o4ptbansrlib03ve0.apps.googleusercontent.com"
+      data-context="signup"
+      data-ux_mode="popup"
+      data-itp_support="true"
+      data-callback="credentialResponse"
+    ></div>
+
+    <div
+      class="g_id_signin"
+      data-type="icon"
+      data-shape="circle"
+      data-theme="outline"
+      data-text="signin_with"
+      data-size="large"
+      data-locale="en-US"
+    ></div>
+    <button id="signout">Sign out</button>
+  </body>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    function credentialResponse(res) {
+      console.log('post')
+      fetch('http://localhost:3000/api/login/google', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ credential: res.credential })
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          console.log(res)
+        })
+    }
+  </script>
 </html>
