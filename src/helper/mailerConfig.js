@@ -1,20 +1,11 @@
 import nodemailer from 'nodemailer'
 
-// Configura el transporte de nodemailer con tu cuenta de Gmail
-// export const transporter = nodemailer.createTransport({
-//   service: 'gmail',
-
-//   auth: {
-//     user: 'gianco.marquez@gmail.com',
-//     pass: 'vpps fgpy bzrv aixb' // Es mejor usar variables de entorno para seguridad
-//   }
-// })
-
 export const transporter = nodemailer.createTransport({
-  service: 'gmail',
-
+  host: 'mail.privateemail.com', // Servidor SMTP de privateemail.com
+  port: 587, // Puerto para conexiones TLS
+  secure: false, // Usamos `false` para TLS
   auth: {
-    user: 'gianco.marquez@gmail.com',
-    pass: 'vpps fgpy bzrv aixb' // Es mejor usar variables de entorno para seguridad
-  }
+    user: 'no-reply@menutify.com', // Cambia a tu email de privateemail.com
+    pass: 'Tecnicos88', // Cambia a tu contraseña de privateemail.com
+  },
 })

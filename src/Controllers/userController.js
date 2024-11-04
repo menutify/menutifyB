@@ -125,8 +125,13 @@ const putUser = async (req, res) => {
   try {
     const { id } = req.params
 
-   
     const data = req.body
+
+    console.log({ data })
+    let newPassword
+    if (data?.password) {
+      data.password = await bcrypt.hash(data.password, 10)
+    }
 
     await models.user.update(data, { where: { id } })
 

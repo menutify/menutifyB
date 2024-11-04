@@ -5,17 +5,14 @@ import bcryptjs from 'bcryptjs'
 
 export const getMe = async (req, res) => {
   try {
-    // Obtiene el token del header de autorización
-    const token = req.headers.authorization // "TOKEN"
-
     // Verificar y decodificar el token
-    const decoded = verifyJWT(token) // Usa tu clave secreta
+    const { decoded } = req.user // Usa tu clave secreta
 
     // Buscar al usuario en la base de datos utilizando el ID del token
     const user = await models.user.findOne({ where: { email: decoded.data } }) // No devolver la contraseña
 
     if (!user) {
-      return res.status(404).json({ message: 'Usuario no encontrado' })
+      return res.status(404).json({ msg: 'Usuario no encontrado' })
     }
 
     // Devolver la información del usuario
@@ -28,7 +25,7 @@ export const getMe = async (req, res) => {
     })
   } catch (error) {
     console.log({ error })
-    return res.status(400).json({ message: 'Token inválido o expirado' })
+    return res.status(400).json({ msg: 'Token inválido o expirado' })
   }
 }
 
@@ -38,10 +35,11 @@ const sendEmail = async (req, res) => {
   try {
     // Verificar si el usuario existe
     const user = await models.user.findOne({ where: { email } })
+
     if (!user) {
       return res
         .status(404)
-        .json({ message: 'No se encontró ningún usuario con ese correo.' })
+        .json({ msg: 'No se encontró ningún usuario con ese correo.' })
     }
 
     // Generar el token de restablecimiento (valido por 1 hora)
@@ -51,7 +49,7 @@ const sendEmail = async (req, res) => {
     const resetLink = `http://localhost:5173/change-password/${resetToken}` // La URL de tu frontend para resetear la contraseña
 
     const mailOptions = {
-      from: 'gianco.marquez@gmail.com',
+      from: 'no-reply@menutify.com',
       to: user.email,
       subject: 'Restablecimiento de contraseña',
       text: `Has solicitado un restablecimiento de contraseña. Usa el siguiente enlace para restablecerla: ${resetLink}`
@@ -64,29 +62,33 @@ const sendEmail = async (req, res) => {
       .json({ msg: 'Correo de restablecimiento enviado', token: resetToken })
   } catch (error) {
     console.log({ error })
-    res.status(500).json({ message: 'Hubo un problema al enviar el correo' })
+    res.status(500).json({ msg: 'Hubo un problema al enviar el correo' })
   }
 }
 
 const resetPassword = async (req, res) => {
-  const { password } = req.body
+  const { password, repassword } = req.body
 
   const token = req.headers.authorization // "TOKEN"
 
   try {
+    if (password !== repassword)
+      return res.status(400).json({ msg: 'Las contraseñas no coinciden' })
+
+    if (!token) return res.status(400).json({ msg: 'Error al obtener token' })
     const decoded = verifyJWT(token) // Usa tu clave secreta
     // Buscar al usuario en la base de datos utilizando el ID del token
 
     // console.log({ decoded })
     if (!decoded)
-      return res.status(400).json({ msg: 'token error', error: true })
+      return res.status(400).json({ msg: 'Link expirado', error: true })
 
     const user = await models.user.findOne({ where: { id: decoded.data } })
 
     if (!user) {
       return res
         .status(404)
-        .json({ message: 'No se encontró ningún usuario con ese correo.' })
+        .json({ msg: 'No se encontró ningún usuario con ese correo.' })
     }
 
     const newPassword = await bcryptjs.hash(password, 10)
@@ -101,12 +103,10 @@ const resetPassword = async (req, res) => {
       .json({ msg: 'contraseña cambiada correctamente', id: user.id })
   } catch (error) {
     console.log({ error })
-    res.status(500).json({ message: 'Hubo un problema al enviar el correo' })
+    res.status(500).json({ msg: 'Hubo un problema al enviar el correo' })
   }
   // Verificar y decodificar el token
 }
-
-
 
 export const authController = {
   getMe,

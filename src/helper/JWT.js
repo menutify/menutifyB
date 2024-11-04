@@ -22,12 +22,11 @@ export const createJWT = (data, time) => {
 }
 
 export const verifyJWT = (token) => {
-  const decoded = jwt.verify(token, process.env.JWT_SECRET, (e, deco) => {
-    if (e) {
-      console.log({ errorInVerify: e })
+  const decoded = jwt.verify(token, process.env.JWT_SECRET, (error, data) => {
+    if (error) {
       return false
     }
-    return deco
+    return data
   })
 
   return decoded
