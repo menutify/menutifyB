@@ -30,19 +30,19 @@ const postUser = async (req, res) => {
   try {
     const { name, email, password } = req.body
 
-    // const user = await models.user.count({ where: { email } })
-    // if (user) return res.status(400).json({ msg: 'Usuario ya registrado' })
+    const user = await models.user.count({ where: { email } })
+    if (user) return res.status(400).json({ msg: 'Usuario ya registrado' })
 
     //enviar correo de verificacion
-    const userToken = await createJWT({ name, email, password }, 200)
+    const userToken = await createJWT({ name, email, password }, 600)
 
-    const confirmAccountLink = `http://localhost:5173/confirm-account/${userToken}`
+    const confirmAccountLink = `http://localhost:5173/create-account/ready-account/${userToken}`
 
     const mailOptions = {
-      from: 'gianco.marquez@gmail.com',
-      to: user.email,
+      from: 'no-reply@menutify.com',
+      to: email,
       subject: 'Confirmación de email',
-      text: ` Usa el siguiente enlace para confirmar tu email: \n ${resetLink}`
+      text: ` Usa el siguiente enlace para confirmar tu email: \n ${confirmAccountLink}`
     }
 
     await transporter.sendMail(mailOptions)
@@ -68,7 +68,7 @@ const postUser = async (req, res) => {
   } catch (error) {
     console.log({ error })
     res.status(400).json({
-      data: 'Se presento un error al crear el Usuario',
+      data: 'Se presento un error al enviar correo para crear usuario',
       error
     })
   }
@@ -78,9 +78,7 @@ const createNewUser = async (req, res) => {
   const tokenUser = req.body
 
   try {
-    const dataTokenUser = verifyJWT(tokenUser)
-
-    console.log({ dataTokenUser })
+    const { data: dataTokenUser } = await verifyJWT(tokenUser.token)
 
     if (!dataTokenUser)
       return res.status(400).json({ msg: 'token error', error: true })
@@ -89,7 +87,7 @@ const createNewUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(dataTokenUser.password, 10)
 
     // // Crear un token
-    const token = await createJWT(email, '4h')
+    const token = await createJWT(dataTokenUser.email, '4h')
 
     const { id } = await models.user.create({
       name: dataTokenUser.name,
@@ -98,14 +96,20 @@ const createNewUser = async (req, res) => {
     })
 
     return res.status(200).json({ msg: true, id, token })
-  } catch (error) {}
+  } catch (error) {
+    console.log(error)
+    res.status(400).json({
+      data: 'Se presento un error al crear la cuenta',
+      error
+    })
+  }
 }
 
 const changeUserNewDetail = async (req, res) => {
   try {
     const token = req.headers.authorization
 
-    const { data: email } = verifyJWT(token)
+    const { data: email } = await verifyJWT(token)
 
     await models.user.update(
       { new: false, subActive: true },

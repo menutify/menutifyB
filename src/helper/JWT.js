@@ -21,13 +21,18 @@ export const createJWT = (data, time) => {
   })
 }
 
-export const verifyJWT = (token) => {
-  const decoded = jwt.verify(token, process.env.JWT_SECRET, (error, data) => {
-    if (error) {
-      return false
+export const verifyJWT = async (token) => {
+  const decoded = await jwt.verify(
+    token,
+    process.env.JWT_SECRET,
+    (error, data) => {
+      if (error) {
+        console.log({ errorWToken: error })
+        return false
+      }
+      return data
     }
-    return data
-  })
+  )
 
   return decoded
 }
