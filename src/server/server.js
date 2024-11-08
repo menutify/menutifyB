@@ -10,6 +10,7 @@ import catRouter from '../routes/cat.routes.js'
 import { models } from '../Models/allModels.js'
 import loginRouter from '../routes/login.routes.js'
 import authRouter from '../routes/auth.routes.js'
+import payRouter from '../routes/payment.routes.js'
 
 class Server {
   constructor() {
@@ -22,7 +23,17 @@ class Server {
     this.initDB()
     // Middlewares
     this.app.use(express.static('src/public'))
-    this.app.use(express.json())
+    this.app.use((req, res, next) => {
+      if (req.path === '/api/pay/webhook-intent') {
+        // Para la ruta de webhook, usa express.raw para mantener el body en Buffer
+        console.log('ishere')
+        express.raw({ type: 'application/json' })(req, res, next)
+      } else {
+        console.log({ path1: req.path })
+        // Para el resto de la app, usa express.json
+        express.json()(req, res, next)
+      }
+    })
     this.app.use(cors())
     // Rutas de la aplicacion
     this.app.use('/api/user', userRoute)
@@ -32,6 +43,7 @@ class Server {
     this.app.use('/api/cat', catRouter)
     this.app.use('/api/login', loginRouter)
     this.app.use('/api/auth', authRouter)
+    this.app.use('/api/pay', payRouter)
   }
 
   //metodo asincrono de coneccion con BD

@@ -83,6 +83,12 @@ const createNewUser = async (req, res) => {
     if (!dataTokenUser)
       return res.status(400).json({ msg: 'token error', error: true })
 
+    const user = await models.user.count({
+      where: { email: dataTokenUser.email }
+    })
+
+    if (user)
+      return res.status(409).json({ msg: 'el uruario ya existe', error: true })
     // Encriptar la contraseña
     const hashedPassword = await bcrypt.hash(dataTokenUser.password, 10)
 

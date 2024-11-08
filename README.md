@@ -13,3 +13,4 @@ status code:
 - 201 created
 - 204 nocontent
 - 304 no modified
+-409 must be unique
