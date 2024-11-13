@@ -2,108 +2,83 @@ import { createJWT, verifyJWT } from '../helper/JWT.js'
 import { models } from '../Models/allModels.js'
 import { transporter } from '../helper/mailerConfig.js'
 import bcryptjs from 'bcryptjs'
+import { changePasswordMail } from '../database/mailModels.js'
+import { setTokenToCookies } from '../helper/cookieManipulation.js'
 
+//* verifica que el token sea valido y el usuario de ese token exista
 export const getMe = async (req, res) => {
+  const { id, isNew, email, subActive } = req.user // Usa tu clave secreta
+
   try {
-    // Verificar y decodificar el token
-    const { decoded } = req.user // Usa tu clave secreta
+    //si existe un token valido, creo otro de 24h y lo reemplazo
+    const { token } = createJWT({ id, email }, req)
 
-    // Buscar al usuario en la base de datos utilizando el ID del token
-    const user = await models.user.findOne({ where: { email: decoded.data } }) // No devolver la contraseña
+    setTokenToCookies(res, token)
 
-    if (!user) {
-      return res.status(404).json({ msg: 'Usuario no encontrado' })
-    }
-
-    // Devolver la información del usuario
-    return res.status(200).json({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      new: user.new
-      // Puedes agregar más campos que necesites
+    res.status(200).json({
+      msg: 'Ingreso autorizado',
+      error: false,
+      data: { id, isNew, email, subActive }
     })
   } catch (error) {
     console.log({ error })
-    return res.status(400).json({ msg: 'Token inválido o expirado' })
+    return res.status(500).json({
+      msg: 'Problemas en el acceso automatico',
+      data: { error },
+      error: true
+    })
   }
 }
 
 const sendEmail = async (req, res) => {
-  const { email } = req.body
-
+  const { id, isNew, email } = req.user
   try {
-    // Verificar si el usuario existe
-    const user = await models.user.findOne({ where: { email } })
+    //duracion del token 10minutos
+    const { error, token, msg } = createJWT({ email, id }, req, '600')
 
-    if (!user) {
-      return res
-        .status(404)
-        .json({ msg: 'No se encontró ningún usuario con ese correo.' })
+    if (error) {
+      res.status(400).json(error, msg)
     }
 
-    // Generar el token de restablecimiento (valido por 1 hora)
-    const resetToken = await createJWT(user.id, 600)
+    const resetLink = `${process.env.FRONT_PATH}/change-password/${token}` // La URL de tu frontend para resetear la contraseña
 
-    // Enviar el correo
-    const resetLink = `http://localhost:5173/change-password/${resetToken}` // La URL de tu frontend para resetear la contraseña
+    const mailModel = changePasswordMail(user.email, resetLink)
 
-    const mailOptions = {
-      from: 'no-reply@menutify.com',
-      to: user.email,
-      subject: 'Restablecimiento de contraseña',
-      text: `Has solicitado un restablecimiento de contraseña. Usa el siguiente enlace para restablecerla: ${resetLink}`
-    }
+    await transporter.sendMail(mailModel)
 
-    await transporter.sendMail(mailOptions)
-
-    return res
-      .status(200)
-      .json({ msg: 'Correo de restablecimiento enviado', token: resetToken })
+    return res.status(200).json({
+      msg: 'Correo de restablecimiento enviado',
+      error: false,
+      data: { token: resetToken, link: resetLink }
+    })
   } catch (error) {
     console.log({ error })
-    res.status(500).json({ msg: 'Hubo un problema al enviar el correo' })
+    res.status(500).json({
+      msg: 'Hubo un problema al enviar el correo',
+      error: true,
+      data: { error }
+    })
   }
 }
 
 const resetPassword = async (req, res) => {
-  const { password, repassword } = req.body
-
-  const token = req.headers.authorization // "TOKEN"
+  const { password, id } = req.body
 
   try {
-    if (password !== repassword)
-      return res.status(400).json({ msg: 'Las contraseñas no coinciden' })
-
-    if (!token) return res.status(400).json({ msg: 'Error al obtener token' })
-    const decoded = verifyJWT(token) // Usa tu clave secreta
-    // Buscar al usuario en la base de datos utilizando el ID del token
-
-    // console.log({ decoded })
-    if (!decoded)
-      return res.status(400).json({ msg: 'Link expirado', error: true })
-
-    const user = await models.user.findOne({ where: { id: decoded.data } })
-
-    if (!user) {
-      return res
-        .status(404)
-        .json({ msg: 'No se encontró ningún usuario con ese correo.' })
-    }
-
     const newPassword = await bcryptjs.hash(password, 10)
 
-    await models.user.update(
-      { password: newPassword },
-      { where: { id: user.id } }
-    )
+    await models.user.update({ password: newPassword }, { where: { id } })
 
     return res
       .status(200)
-      .json({ msg: 'contraseña cambiada correctamente', id: user.id })
+      .json({ msg: 'contraseña cambiada correctamente', error: false })
   } catch (error) {
     console.log({ error })
-    res.status(500).json({ msg: 'Hubo un problema al enviar el correo' })
+    res.status(500).json({
+      msg: 'Hubo un problema al enviar el correo',
+      error: true,
+      data: { error }
+    })
   }
   // Verificar y decodificar el token
 }

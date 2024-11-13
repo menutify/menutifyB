@@ -11,8 +11,7 @@ const user = sqConexion.define(
       primaryKey: true
     },
     name: {
-      type: DataTypes.STRING,
-      allowNull: false
+      type: DataTypes.STRING
     },
     email: {
       type: DataTypes.STRING,
@@ -21,7 +20,7 @@ const user = sqConexion.define(
     },
     type: {
       type: DataTypes.ENUM,
-      values: ['admin', 'user'],
+      values: ['admin', 'invited', 'user'],
       defaultValue: 'user', // Valor por defecto es 'viewer'
       allowNull: false
     },
@@ -38,10 +37,19 @@ const user = sqConexion.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
-    session:{
-      type:DataTypes.ENUM,
+    session: {
+      type: DataTypes.ENUM,
       values: ['normal', 'facebook', 'google'],
-      defaultValue:'normal'
+      defaultValue: 'normal'
+    },
+    country: {
+      type: DataTypes.STRING
+    },
+    phone: {
+      type: DataTypes.STRING
+    },
+    code: {
+      type: DataTypes.STRING
     }
   },
   {
@@ -67,7 +75,7 @@ const invitedCode = sqConexion.define('code', {
   used: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
-    
+
     defaultValue: false
   }
 })
@@ -85,7 +93,13 @@ const subs = sqConexion.define('subs', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-
+  id_pay: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  id_client_stripe: {
+    type: DataTypes.STRING
+  },
   c_date: {
     type: DataTypes.DATE
   },
@@ -101,6 +115,12 @@ const subs = sqConexion.define('subs', {
     type: DataTypes.ENUM,
     values: ['1', '2', '3'],
     defaultValue: '1',
+    allowNull: false
+  },
+  platform: {
+    type: DataTypes.ENUM,
+    values: ['mp', 'st'],
+    defaultValue: 'mp',
     allowNull: false
   }
 })

@@ -1,27 +1,63 @@
 import { verifyJWT } from '../helper/JWT.js'
+import {
+  deleteTokenFromCookies,
+  getTokenFromCookies
+} from '../helper/cookieManipulation.js'
 
-export const existJWT = (req, res, next) => {
-  console.log(1)
-  const token = req.headers.authorization
-  if (!token) {
-    return res.status(401).json({ msg: 'Token no proporcionado' })
+export const verifyExistJWT = (req, res, next) => {
+  const authToken = getTokenFromCookies(req)
+
+  if (!authToken || authToken == undefined) {
+    res.status(404).json({ msg: 'Token no existe', error: true })
+    return
   }
-  req.user = { token }
+  console.log('verificando datos jwt')
+  const { error, data, msg } = verifyJWT(authToken)
+
+  if (error) {
+    deleteTokenFromCookies(res)
+    res.status(401).json({ msg, error })
+    return
+  }
+
+  console.log('datos verificados de jwt')
+  req.user = data
+
   next()
 }
 
-export const vefiryExistJWT = async (req, res, next) => {
-  console.log(2)
-  const token = req.headers.authorization
-  try {
-    const decoded = await verifyJWT(token)
-    console.log({ decoded })
-    if (!decoded)
-      return res.status(401).json({ msg: 'Token inválido o expirado' })
+export const verifyDataFromJWT = (req, res, next) => {
+  const { ip, userAgent, email } = req.user
 
-    req.user['decoded'] = decoded
-    next()
-  } catch (e) {
-    return res.status(401).json({ msg: 'Token inválido o expirado' })
+  if (ip != req.ip || userAgent != req.headers['user-agent']) {
+    res
+      .status(401)
+      .json({ msg: 'token invalido, datos no coinciden 1', error: true })
+    return
   }
+
+  req.body.email = email
+
+  next()
+}
+
+export const verifyExistJWTinHeaders = (req, res, next) => {
+  const { Authorization: authToken } = req.headers
+
+  if (!authToken || authToken == undefined) {
+    res.status(404).json({ msg: 'Token no existe', error: true })
+    return
+  }
+
+  const { error, data, msg } = verifyJWT(authToken)
+  if (error) {
+    res.status(401).json({ msg, error })
+  }
+
+  console.log(data)
+  //{email,id,ip,userAgent}
+  //in create user: {email,password}
+  req.user = data
+  req.body.email = data.email
+  next()
 }

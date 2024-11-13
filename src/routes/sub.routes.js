@@ -3,10 +3,10 @@ import { subObject } from '../Controllers/subController.js'
 
 const subRouter = Router()
 
-subRouter.get('/',subObject.getSubs)
+subRouter.get('/', subObject.getAllSubs)
 
-subRouter.post('/', subObject.postSub)
+subRouter.get('/:id_user', subObject.getOneSub)
 
-subRouter.put('/:id', subObject.putSub)
+subRouter.delete('/:id_user', subObject.deleteSub)
 
 export default subRouter
