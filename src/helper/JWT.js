@@ -1,9 +1,9 @@
 import jwt from 'jsonwebtoken'
 
-export const createJWT = (data,req, time = '24h') => {
+export const createJWT = (data, req, time = '24h') => {
   const ip = req.ip
   const userAgent = req.headers['user-agent']
-  const payload = { ...data ,ip,userAgent }
+  const payload = { ...data, ip, userAgent }
 
   const token = jwt.sign(
     payload,
@@ -23,6 +23,7 @@ export const createJWT = (data,req, time = '24h') => {
 export const verifyJWT = (token) => {
   const decoded = jwt.verify(token, process.env.JWT_SECRET, (error, data) => {
     if (error) {
+      console.log({ error })
       return {
         error: true,
         data: null,

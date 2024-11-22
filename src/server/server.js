@@ -27,7 +27,7 @@ class Server {
     this.app.use(express.static('src/public'))
     this.app.use(cookieParser(process.env.SECRET_KEY_COOKIES)) //clave secreta dentro de parser
     this.app.use((req, res, next) => {
-      if (req.path === '/api/pay/webhook-intent') {
+      if (req.path === '/api/payment/webhook-menutify') {
         // Para la ruta de webhook, usa express.raw para mantener el body en Buffer
         console.log('ishere')
         express.raw({ type: 'application/json' })(req, res, next)

@@ -1,4 +1,3 @@
-import Stripe from 'stripe'
 import { createJWT } from '../helper/JWT.js'
 import { confirmAccountMail } from '../database/mailModels.js'
 import { transporter } from '../helper/mailerConfig.js'
@@ -6,23 +5,32 @@ import bcrypt from 'bcryptjs'
 import { models } from '../Models/allModels.js'
 import { setTokenToCookies } from '../helper/cookieManipulation.js'
 import { subFromStripe, subFromStripeOther } from '../helper/payMethods.js'
-// const stripe = Stripe(process.env.PK_STRIPE)
+import Stripe from 'stripe'
+import dotenv from 'dotenv'
+dotenv.config()
+const stripe = Stripe(process.env.SK_STRIPE)
+
 const sendEmailUser = async (req, res) => {
   const { email, password } = req.body
 
   try {
     //enviar correo de verificacion
-    const userToken = createJWT({ email, password }, req, '600')
+    const userToken = createJWT({ email, password }, req, '1h')
 
-    const link = `${process.env.FRONT_PATH}/create-account/ready-account/${userToken}`
+    //aqui envia el token, pero no se envia el email
+    const pathLink = `${process.env.FRONT_PATH}/create-account/ready-account/${userToken.token}`
 
-    const mailOptions = confirmAccountMail(email, link)
+    console.log({ token: userToken.token })
+
+    const mailOptions = confirmAccountMail(email, pathLink)
 
     await transporter.sendMail(mailOptions)
 
-    return res
-      .status(200)
-      .json({ msg: 'Correo de confirmacion enviado', error: false })
+    return res.status(200).json({
+      msg: 'Correo de confirmacion enviado',
+      error: false,
+      data: { resp: true }
+    })
   } catch (error) {
     res.status(400).json({
       msg: 'Se presento un error al enviar correo para crear usuario',
@@ -54,6 +62,16 @@ const createNewUser = async (req, res) => {
   }
   const { email, password } = req.user
 
+  // req.user={
+  //   email: 'gianco.marquez@gmail.com',
+  //   password: 'elkake',
+  //   ip: '::1',
+  //   userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTM
+  // L, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  //   iat: 1732049728,
+  //   exp: 1732053328
+  // }
+
   try {
     // Encriptar la contraseña
     const hashedPassword = await bcrypt.hash(password, 10)
@@ -61,8 +79,7 @@ const createNewUser = async (req, res) => {
     // // Crear un token
 
     const { id } = await models.user.create({
-      // name: dataTokenUser.name,
-      email: dataTokenUser.email,
+      email,
       password: hashedPassword
     })
 
@@ -88,8 +105,13 @@ const createNewUser = async (req, res) => {
 }
 
 const createPaymentWithStripe = async (req, res) => {
-  const { customerId, id, code, name, phone, country = '' } = req.body
+  const { email, id, code, name, phone, country = '' } = req.body
+  // generamos el customer id
+  const customer = await stripe.customers.create({
+    email: email
+  })
 
+  const customerId = customer.id
   console.log({ customerId, id, code, name, phone, country })
 
   try {
@@ -105,36 +127,52 @@ const createPaymentWithStripe = async (req, res) => {
       current_period_end,
       status
     } = data.subscription
-    //una vez realizado el pago, creamos la suscripcion
-    console.log({ all: data.subscription })
-    await models.subs.create({
-      id_user: id,
-      id_pay: id_sub,
-      c_date: created,
-      f_date: current_period_end,
-      id_client_stripe: customerId,
-      state: true,
-      type: '1',
-      platform: 'st'
+
+    console.log({ suscriptionOption: data.subscription })
+
+    // Agregar metadatos al PaymentIntent
+    await stripe.paymentIntents.update(latest_invoice.payment_intent.id, {
+      metadata: {
+        mensaje: 'en español todo es mas facil'
+      }
     })
 
-    //una vez realizado el pago, guardamos los datos en el usuario
-    await models.user.update(
-      { code, name, phone, country, new: false, subActive: true },
-      { where: { id } }
-    )
+    //una vez realizado el pago, creamos la suscripcion
+    // console.log({ all: data.subscription })
+    // await models.subs.create({
+    //   id_user: id,
+    //   id_pay: id_sub,
+    //   c_date: created,
+    //   f_date: current_period_end,
+    //   id_client_stripe: customerId,
+    //   state: true,
+    //   type: '1',
+    //   platform: 'st'
+    // })
+
+    // //una vez realizado el pago, guardamos los datos en el usuario
+    // await models.user.update(
+    //   { code, name, phone, country, new: false, subActive: true },
+    //   { where: { id } }
+    // )
+
+    // res.status(200).json({
+    //   msg: 'Suscripcion creada correctamente',
+    //   error: false,
+    //   data: {
+    //     subscriptionId: id_sub,
+    //     latest_invoice: latest_invoice,
+    //     clientSecret: latest_invoice.payment_intent.client_secret,
+    //     start: created,
+    //     end: current_period_end,
+    //     status: status
+    //   }
+    // })
 
     res.status(200).json({
-      msg: 'Suscripcion creada correctamente',
-      error: false,
-      data: {
-        subscriptionId: id_sub,
-        latest_invoice: latest_invoice,
-        clientSecret: latest_invoice.payment_intent.client_secret,
-        start: created,
-        end: current_period_end,
-        status: status
-      }
+      msg: 'ok',
+      data: { clientSecret: latest_invoice.payment_intent.client_secret },
+      error: false
     })
   } catch (error) {
     console.log(error)

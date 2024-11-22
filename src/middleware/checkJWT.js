@@ -42,8 +42,8 @@ export const verifyDataFromJWT = (req, res, next) => {
 }
 
 export const verifyExistJWTinHeaders = (req, res, next) => {
-  const { Authorization: authToken } = req.headers
-
+  const { authorization: authToken } = req.headers
+  console.log({ authToken })
   if (!authToken || authToken == undefined) {
     res.status(404).json({ msg: 'Token no existe', error: true })
     return
@@ -52,9 +52,9 @@ export const verifyExistJWTinHeaders = (req, res, next) => {
   const { error, data, msg } = verifyJWT(authToken)
   if (error) {
     res.status(401).json({ msg, error })
+    return
   }
 
-  console.log(data)
   //{email,id,ip,userAgent}
   //in create user: {email,password}
   req.user = data

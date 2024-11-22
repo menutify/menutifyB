@@ -20,7 +20,7 @@ export const subFromStripe = async (customerId) => {
       payment_behavior: 'default_incomplete',
       //evita que el usuario tenga que ingresar su tarjeta cada vez que se actulice la suscripcion, porque guarda el metodo de pago
       payment_settings: { save_default_payment_method: 'on_subscription' },
-      //expande la respuesta, muestra datos del payment intent
+      //expande los datos del latest_invoice, que es la facturaid, y obtiene el paymentintent
       expand: ['latest_invoice.payment_intent']
     })
 
@@ -34,8 +34,8 @@ export const subFromStripe = async (customerId) => {
       return { error: true, msg: 'Subscription no creada' }
     }
 
-    const customData = await stripe.customers.retrieve(customerId)
-    console.log(customData)
+    // const customData = await stripe.customers.retrieve(customerId)
+    // console.log(customData)
     return { error: false, data: { subscription }, msg: 'Subscripcion creada' }
   } catch (error) {
     console.log({ error })

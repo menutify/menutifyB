@@ -20,7 +20,7 @@ createAccountRouter.get('/config', (req, res) => {
 
 // body: { name,email,password}
 createAccountRouter.post(
-  '/',
+  '/verify',
   [
     emailCheck('email'),
     passwordCheck('password'),
