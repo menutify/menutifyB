@@ -8,12 +8,13 @@ import mercadoPago, {
   Payment
 } from 'mercadopago'
 import dotenv from 'dotenv'
+import axios from 'axios'
 
 const allATMP = {
   at_test1:
-    'TEST-4397423146324711-112201-53eafddd88f9fc4776fdfa41eba1ca0c-1570773738',
+    'TEST-6089233700666068-112016-02806d34a179c855b37cb1f0793d581b-1570773738',
   at_test2:
-    'APP_USR-8950001460258740-112123-eaeb93c8a62ed10b2fce0e2a54899b1f-2112128028'
+    'APP_USR-5494654379404206-112113-0733826a5aa3576034e50476a6814fde-2110474596'
 }
 
 dotenv.config()
@@ -104,16 +105,16 @@ paymentRouter.get('/productData', async (req, res) => {
     }
   })
 })
+//mp
+const clientMP = new MercadoPagoConfig({
+  accessToken: allATMP.at_test2,
+  options: {
+    timeout: 5000
+    // Establece un tiempo de espera en milisegundos
+  }
+})
+const payment = new Payment(clientMP)
 paymentRouter.post('/payment-intent', async (req, res) => {
-  //mp
-  const clientMP = new MercadoPagoConfig({
-    accessToken: allATMP.at_test1,
-    options: {
-      timeout: 5000
-      // Establece un tiempo de espera en milisegundos
-    }
-  })
-  const payment = new Payment(clientMP)
 
   try {
     const {
@@ -174,42 +175,30 @@ paymentRouter.post('/payment-intent', async (req, res) => {
   }
 })
 
-paymentRouter.post('/payment-intent2', async (req, res) => {
+paymentRouter.post('/sub-intent', async (req, res) => {
   try {
-    const {
-      token,
-      transaction_amount,
-      payer,
-      payment_method_id,
-      installments,
-      issuer_id
-    } = req.body
+   
+    const { tokenid } = req.body;
 
-    // Validar que todos los datos requeridos están presentes
-    if (!token || !transaction_amount || !payer || !payment_method_id) {
-      console.log('faltan datos')
-      return res.status(400).json({
-        error: true,
-        msg: 'Faltan datos obligatorios para procesar el pago.'
-      })
-    }
+    const response = await axios.post(
+      'https://api.mercadopago.com/preapproval',
+      {
+        preapproval_plan_id:"2c938084934d1f17019354f117af02ef",
+        card_token_id:tokenid,
+        back_url:"https://pandagif.vercel.app/#/gif/3o7btMCltyDvSgF92E",
+        payer_email:"test@gmail.com",
+        status: 'authorized'
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${allATMP.at_test1}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
-    const data = await payment.create({ body: req.body })
-    console.log({ data })
-    // Validar el estado del pago
-    if (data.status === 'approved') {
-      return res.status(200).json({
-        error: false,
-        msg: 'Pago aprobado',
-        data: data
-      })
-    } else {
-      return res.status(400).json({
-        error: true,
-        msg: 'Pago rechazado',
-        data: data
-      })
-    }
+    res.status(200).json(response.data);
+
   } catch (error) {
     console.log({ error })
     res
