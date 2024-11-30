@@ -2,10 +2,12 @@ import bcryptjs from 'bcryptjs'
 import { createJWT } from '../helper/JWT.js'
 import { setTokenToCookies } from '../helper/cookieManipulation.js'
 import { models } from '../Models/allModels.js'
+import verify from '../helper/verifyIdToken.js'
 
 export const userExistInBody = async (req, res, next) => {
   try {
     const { email } = req.body
+    console.log({ email })
     const user = await models.user.findOne({
       where: { email }
     })
@@ -24,6 +26,8 @@ export const userExistInBody = async (req, res, next) => {
       isNew: user.new,
       subActive: user.subActive
     }
+
+    console.log(req.user)
 
     next()
   } catch (error) {
@@ -62,15 +66,16 @@ export const userExistWGoogle = async (req, res, next) => {
     const user = await models.user.findOne({ where: { email } })
 
     if (user) {
-      const token = createJWT({ email, id: user.id })
+      const token = createJWT({ email, id: user.id }, req)
 
       setTokenToCookies(res, token)
 
-      return res.status(203).json({
+      res.status(203).json({
         msg: 'Usuario ya existe',
         error: false,
         data: { new: user.new, email }
       })
+      return
     }
 
     req.user = { email, name, password, session: 'google' }

@@ -59,5 +59,6 @@ export const verifyExistJWTinHeaders = (req, res, next) => {
   //in create user: {email,password}
   req.user = data
   req.body.email = data.email
+  req.body.id=data.id
   next()
 }

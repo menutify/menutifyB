@@ -11,11 +11,19 @@ dotenv.config()
 const stripe = Stripe(process.env.SK_STRIPE)
 
 const sendEmailUser = async (req, res) => {
-  const { email, password } = req.body
+  const { email, password,repassword,name,phone,country } = req.body
 
+
+  console.log({email,password,repassword,name,phone,country})
   try {
+
+    if(password.toLowerCase() != repassword.toLowerCase()){
+      res.status(400).json({ msg: 'Las contraseñas no coinciden',
+      error: true,
+      data: { resp: false }})
+    }
     //enviar correo de verificacion
-    const userToken = createJWT({ email, password }, req, '1h')
+    const userToken = createJWT({ email, password,name,phone,country }, req, '1h')
 
     //aqui envia el token, pero no se envia el email
     const pathLink = `${process.env.FRONT_PATH}/create-account/ready-account/${userToken.token}`
@@ -58,10 +66,8 @@ const directCreateNewUser = async (req, res) => {
 }
 
 const createNewUser = async (req, res) => {
-  {
-  }
-  const { email, password } = req.user
-
+  const { email, password,phone,name,country } = req.user
+  console.log(req.user)
   // req.user={
   //   email: 'gianco.marquez@gmail.com',
   //   password: 'elkake',
@@ -80,7 +86,7 @@ const createNewUser = async (req, res) => {
 
     const { id } = await models.user.create({
       email,
-      password: hashedPassword
+      password: hashedPassword,name,phone,country
     })
 
     //enviamos token a cookies
@@ -93,7 +99,7 @@ const createNewUser = async (req, res) => {
     return res.status(200).json({
       msg: 'Usuario creado correctamente',
       error: false,
-      data: { id, email, new: true }
+      data: { id, email, new: true,subActive:false }
     })
   } catch (error) {
     res.status(400).json({

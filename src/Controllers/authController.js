@@ -33,8 +33,11 @@ export const getMe = async (req, res) => {
 const sendEmail = async (req, res) => {
   const { id, isNew, email } = req.user
   try {
+    
+    console.log({id,isNew,email})
     //duracion del token 10minutos
-    const { error, token, msg } = createJWT({ email, id }, req, '600')
+    const { error, token, msg } = createJWT({ email, id }, req, '1h')
+
 
     if (error) {
       res.status(400).json(error, msg)
@@ -42,14 +45,14 @@ const sendEmail = async (req, res) => {
 
     const resetLink = `${process.env.FRONT_PATH}/change-password/${token}` // La URL de tu frontend para resetear la contraseña
 
-    const mailModel = changePasswordMail(user.email, resetLink)
+    const mailModel = changePasswordMail(email, resetLink)
 
     await transporter.sendMail(mailModel)
 
     return res.status(200).json({
       msg: 'Correo de restablecimiento enviado',
       error: false,
-      data: { token: resetToken, link: resetLink }
+      data: { token, link: resetLink }
     })
   } catch (error) {
     console.log({ error })
@@ -71,7 +74,7 @@ const resetPassword = async (req, res) => {
 
     return res
       .status(200)
-      .json({ msg: 'contraseña cambiada correctamente', error: false })
+      .json({ msg: 'contraseña cambiada correctamente', error: false ,data:{resp:true}})
   } catch (error) {
     console.log({ error })
     res.status(500).json({

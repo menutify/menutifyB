@@ -4,18 +4,17 @@ import { createJWT } from '../helper/JWT.js'
 import { setTokenToCookies } from '../helper/cookieManipulation.js'
 
 const normalLogin = async (req = request, res = response) => {
-  const { email, id, isNew } = req.user
-  
+  const { email, id, isNew, subActive } = req.user
+
   try {
     const { error, token, msg } = createJWT({ email, id }, req)
 
     if (error) return res.status(400).json({ error, msg })
 
     setTokenToCookies(res, token)
-    
-    res.status(200).json({ msg, error, data: { email, id, isNew } })
+
+    res.status(200).json({ msg, error, data: { email, id, isNew, subActive } })
   } catch (error) {
-    
     return res.status(500).json({
       msg: 'Error de logueo',
       error: true,
@@ -24,11 +23,10 @@ const normalLogin = async (req = request, res = response) => {
   }
 }
 
-
 const networkLogin = async (req, res) => {
+  const { email, name, password, session } = req.user
   try {
-    const { email, name, password, session } = req.user
-
+    console.log({ email, name, password, session })
     const hashedPassword = await bcryptjs.hash(password, 10)
 
     const user = await models.user.create({
@@ -38,11 +36,13 @@ const networkLogin = async (req, res) => {
       session
     })
 
-    console.log(`usuario creado con ${session}: `, { user })
+    console.log(`usuario creado con ${session} `)
 
-    const token = createJWT({ email, id: user.id })
+    const token = createJWT({ email, id: user.id },req)
+    console.log({ token })
     setTokenToCookies(res, token)
 
+    console.log('ultimo paso')
     res
       .status(200)
       .json({ msg: 'Usuario creado', error: false, data: { new: true, email } })

@@ -125,7 +125,7 @@ const subs = sqConexion.define('subs', {
   }
 })
 
-user.hasOne(subs, { foreignKey: 'id_user' })
+user.hasOne(subs, { foreignKey: 'id_user', onDelete: 'CASCADE' })
 subs.belongsTo(user, { foreignKey: 'id_user' })
 
 const menus = sqConexion.define('menus', {
