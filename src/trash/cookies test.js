@@ -19,7 +19,7 @@ createAccountRouter.post('/login', algomas, async (req, res) => {
       if (error) return res.status(400).json({ message: error })
       // Guardamos el token en una cookie HttpOnly
       setTokenToCookies(res, token)
-  
+  await models.user.update({ token }, { where: { id: user.id } })
       res.status(200).json({ message: 'Login exitoso' })
     } catch (error) {
       console.log({ error })

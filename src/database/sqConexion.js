@@ -17,4 +17,6 @@ const sqConexion = new Sequelize(database, username, password, {
   logging: false
 })
 
+
+
 export default sqConexion

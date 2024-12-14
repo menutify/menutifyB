@@ -1,94 +1,75 @@
-// import { models } from '../Models/allModels.js'
+import { Sequelize } from 'sequelize'
+import { uploadImageToS3 } from '../helper/imageToS3.js'
+import { models } from '../Models/allModels.js'
 
-// const getMenus = async (req, res) => {
-//   //todo obtner todos los menus existentes del usuario
-//   try {
-//     const { id_user } = req.query
+const getMenus= async(req,res)=>{
+ try {
+  const allMenus=await models.menus.findAll()
 
-//     // console.log({ id_user })
-//     const allMenus = await models.user.findAll({
-//       where: { id: id_user },
-//       include: [
-//         {
-//           model: models.menus
-//         }
-//       ]
-//     })
+  res.status(200).json(allMenus)
+ } catch (error) {
+  res.status(500).send('error al obtener menus')
+ }
+}
 
-//     if (!allMenus)
-//       return res.status(400).json({ msg: 'problema al encontrar los menus' })
+const updateMenu = async (req, res) => {
+  const contentBody = req.body
+  const { image, id } = req.user
+  console.log(contentBody)
+  try {
+    const {
+      changed,
+      state,
+      id: idmenu,
+      id_restaurant,
+      ...allDataEntry
+    } = contentBody
+    //definimos le nombre de la imagen
 
-//     return res.status(200).json({ response: allMenus[0], msg: 'ok' })
-//   } catch (error) {
-//     return res
-//       .status(400)
-//       .json({ msg: 'error al obtener el menu por id', error })
-//   }
-// }
+    //definimos el path final de la url
+    const path = id_restaurant + '/' + idmenu + '/' + `menu_${id}_${Date.now()}.webp`
 
-// const getMenusById = async (req, res) => {
-//   //todo obtener el menu por id independientemente del usuario
-//   try {
-//     const { id: id_menu } = req.params
+    let imageURL = ''
+    if (image) {
+      const { urlImagen } = await uploadImageToS3(image, path)
 
-//     // console.log({ id })
-//     const menuData = await models.menus.findByPk(id_menu, {
-//       include: [
-//         {
-//           model: models.categories,
-//           attributes: ['id', 'name']
-//         }
-//       ]
-//     })
+      if (!urlImagen)
+        return res.status(500).json({
+          data: {},
+          error: true,
+          msg: 'Error al procesar la imagen'
+        })
 
-//     if (!menuData)
-//       return res.status(400).json({ msg: 'problema al obtener el menu' })
+      imageURL = urlImagen
+    }
 
-//     return res.status(200).json(menuData)
-//   } catch (error) {
-//     return res
-//       .status(400)
-//       .json({ msg: 'error al obtener el menu por id', error })
-//   }
-// }
+    console.log('a ver si actualizamos')
+    await models.menus.update(
+      {
+        ...allDataEntry,
+        header_url: imageURL == '' ? Sequelize.literal('header_url') : imageURL
+      },
+      { where: { id: idmenu } }
+    )
 
-// const postMenus = async (req, res) => {
-//   //todo crear menu, verificando el pago
-//   try {
-//     // 1- obtener datos de creacion de menu
-//     // const {id_user,name,bg_color,description=''}=req.body
-//     const { id_user } = req.query
-//     const data = req.body
+    console.log('llegamos')
+    res.status(200).json({
+      data: { myUrl: imageURL },
 
-//     // 3- registrarlo en la base de datos
-//     const response = await models.menus.create({
-//       ...data,
-//       id_user,
-//       state: true
-//     })
-//     if (!response)
-//       return res.status(400).json({ msg: 'error al crear el modelo' })
-//     // 4- retornar respuesta
-//     return res.status(200).json({ msg: 'ok', user: data.id_user })
-//   } catch (error) {
-//     return res.status(400).json({ msg: 'error al crear el menu', error })
-//   }
-// }
+      error: false,
+      msg: 'Se actualizo correctamente'
+    })
+  } catch (error) {
+    console.log({ error })
+    res.status(500).json({
+      data: {},
+      error: true,
+      msg: 'Error al actualizar restaurant'
+    })
+  }
+}
 
-// const putMenus = async (req, res) => {}
-
-// const deleteMenus = async (req, res) => {
-//   const { id } = req.params
-//   console.log({ id })
-//   await models.menus.destroy({ where: { id } })
-
-//   return res.status(200).json({ msg: 'ok' })
-// }
-
-// export const menuController = {
-//   getMenus,
-//   getMenusById,
-//   postMenus,
-//   putMenus,
-//   deleteMenus
-// }
+export const menuController = {
+  updateMenu
+  ,getMenus
+}

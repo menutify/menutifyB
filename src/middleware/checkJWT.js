@@ -1,40 +1,61 @@
+import { models } from '../Models/allModels.js'
 import { verifyJWT } from '../helper/JWT.js'
 import {
   deleteTokenFromCookies,
   getTokenFromCookies
 } from '../helper/cookieManipulation.js'
 
-export const verifyExistJWT = (req, res, next) => {
+export const verifyExistJWT = async (req, res, next) => {
   const authToken = getTokenFromCookies(req)
 
   if (!authToken || authToken == undefined) {
     res.status(404).json({ msg: 'Token no existe', error: true })
     return
   }
-  console.log('verificando datos jwt')
+
   const { error, data, msg } = verifyJWT(authToken)
 
+  const tokenPatial = authToken.slice(-25)
+
+  console.log({ tokenPatial })
+  //indicar que el token sea igual al de la bd
+  const existToken = await models.user.findOne({
+    where: { id: data.id }
+  })
+
+  console.log({ existToken: existToken?.dataValues.token })
+  if (!existToken || existToken?.dataValues.token != tokenPatial) {
+    res.status(226).json({ msg: 'Se detecto que la cuenta esta siendo usada en otro dispositivo', error: true })
+    return
+  }
   if (error) {
+    console.log('error 401')
     deleteTokenFromCookies(res)
     res.status(401).json({ msg, error })
     return
   }
 
-  console.log('datos verificados de jwt')
   req.user = data
 
   next()
 }
 
+//en caso se haga un logueo desde otra computadora o dispositivo, este se desloguea
 export const verifyDataFromJWT = (req, res, next) => {
   const { ip, userAgent, email } = req.user
-
-  if (ip != req.ip || userAgent != req.headers['user-agent']) {
-    res
-      .status(401)
-      .json({ msg: 'token invalido, datos no coinciden 1', error: true })
-    return
-  }
+  // console.log({
+  //   ip,
+  //   rip: req.ip,
+  //   userAgent,
+  //   rheader: req.headers['user-agent']
+  // })
+  // if (ip != req.ip || userAgent != req.headers['user-agent']) {
+  //   console.log('401 error')
+  //   res
+  //     .status(401)
+  //     .json({ msg: 'Se detecto que la cuenta esta siendo usada en otro dispositivo', error: true })
+  //   return
+  // }
 
   req.body.email = email
 
@@ -43,7 +64,7 @@ export const verifyDataFromJWT = (req, res, next) => {
 
 export const verifyExistJWTinHeaders = (req, res, next) => {
   const { authorization: authToken } = req.headers
-  console.log({ authToken })
+  // console.log({ authToken })
   if (!authToken || authToken == undefined) {
     res.status(404).json({ msg: 'Token no existe', error: true })
     return
@@ -59,6 +80,6 @@ export const verifyExistJWTinHeaders = (req, res, next) => {
   //in create user: {email,password}
   req.user = data
   req.body.email = data.email
-  req.body.id=data.id
+  req.body.id = data.id
   next()
 }

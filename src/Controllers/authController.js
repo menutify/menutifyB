@@ -1,4 +1,4 @@
-import { createJWT, verifyJWT } from '../helper/JWT.js'
+import { createJWT } from '../helper/JWT.js'
 import { models } from '../Models/allModels.js'
 import { transporter } from '../helper/mailerConfig.js'
 import bcryptjs from 'bcryptjs'
@@ -14,6 +14,8 @@ export const getMe = async (req, res) => {
     const { token } = createJWT({ id, email }, req)
 
     setTokenToCookies(res, token)
+    const partialToken=token.slice(-25)
+    await models.user.update({ token:partialToken }, { where: { id } })
 
     res.status(200).json({
       msg: 'Ingreso autorizado',
@@ -33,11 +35,9 @@ export const getMe = async (req, res) => {
 const sendEmail = async (req, res) => {
   const { id, isNew, email } = req.user
   try {
-    
-    console.log({id,isNew,email})
+    // console.log({id,isNew,email})
     //duracion del token 10minutos
     const { error, token, msg } = createJWT({ email, id }, req, '1h')
-
 
     if (error) {
       res.status(400).json(error, msg)
@@ -74,7 +74,11 @@ const resetPassword = async (req, res) => {
 
     return res
       .status(200)
-      .json({ msg: 'contraseña cambiada correctamente', error: false ,data:{resp:true}})
+      .json({
+        msg: 'contraseña cambiada correctamente',
+        error: false,
+        data: { resp: true }
+      })
   } catch (error) {
     console.log({ error })
     res.status(500).json({

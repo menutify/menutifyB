@@ -1,4 +1,4 @@
-import { DataTypes } from 'sequelize'
+import { DataTypes, Sequelize } from 'sequelize'
 
 import sqConexion from '../database/sqConexion.js'
 
@@ -6,8 +6,9 @@ const user = sqConexion.define(
   'user',
   {
     id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
+      type: DataTypes.UUID,
+      defaultValue: Sequelize.UUIDV4, // Genera un UUID automáticamente
+      allowNull: false,
       primaryKey: true
     },
     name: {
@@ -42,13 +43,17 @@ const user = sqConexion.define(
       values: ['normal', 'facebook', 'google'],
       defaultValue: 'normal'
     },
+    img: {
+      type: DataTypes.STRING,
+      defaultValue: ''
+    },
     country: {
       type: DataTypes.STRING
     },
     phone: {
       type: DataTypes.STRING
     },
-    code: {
+    token: {
       type: DataTypes.STRING
     }
   },
@@ -58,31 +63,6 @@ const user = sqConexion.define(
   }
 )
 
-const invitedCode = sqConexion.define('code', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
-  },
-  code: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  // id_user: {
-  //   type: DataTypes.INTEGER,
-  //   defaultValue: 0
-  // },
-  used: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-
-    defaultValue: false
-  }
-})
-
-user.hasMany(invitedCode, { foreignKey: 'id_user', onDelete: 'CASCADE' }) // Un usuario puede tener muchos códigos de invitación
-invitedCode.belongsTo(user, { foreignKey: 'id_user' }) // Un código de invitación pertenece a un usuario
-
 const subs = sqConexion.define('subs', {
   id: {
     type: DataTypes.INTEGER,
@@ -90,7 +70,7 @@ const subs = sqConexion.define('subs', {
     primaryKey: true
   },
   id_user: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     allowNull: false
   },
   id_pay: {
@@ -128,58 +108,64 @@ const subs = sqConexion.define('subs', {
 user.hasOne(subs, { foreignKey: 'id_user', onDelete: 'CASCADE' })
 subs.belongsTo(user, { foreignKey: 'id_user' })
 
+const restaurant = sqConexion.define('restaurant', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  id_user: {
+    type: DataTypes.UUID,
+    allowNull: false
+  },
+  name: {
+    type: DataTypes.STRING,
+    defaultValue: ''
+  },
+  desc: { type: DataTypes.TEXT, defaultValue: '' },
+  address: { type: DataTypes.STRING, defaultValue: '' },
+  number: { type: DataTypes.STRING, defaultValue: '' },
+  currency: { type: DataTypes.STRING, defaultValue: 'ARS' },
+  send_method: { type: DataTypes.STRING, defaultValue: '' },
+  days: { type: DataTypes.JSON, defaultValue: [] },
+  hour: { type: DataTypes.JSON, defaultValue: ['00:00', '00:00'] },
+
+  logo_url: { type: DataTypes.STRING, defaultValue: '' },
+
+  state: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  }
+})
+
+user.hasOne(restaurant, { foreignKey: 'id_user', onDelete: 'CASCADE' })
+restaurant.belongsTo(user, { foreignKey: 'id_user' })
+
 const menus = sqConexion.define('menus', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
   },
-
-  // id_user: {
-  //   type: DataTypes.INTEGER,
-  //   allowNull: false
-  // },
-  bg_color: { type: DataTypes.BOOLEAN, defaultValue: false },
-  name: {
-    type: DataTypes.STRING,
+  id_restaurant: {
+    type: DataTypes.INTEGER,
     allowNull: false
   },
-  description: {
-    type: DataTypes.TEXT
+  f_color: { type: DataTypes.BOOLEAN, defaultValue: false },
+  s_color: { type: DataTypes.STRING, defaultValue: '' },
+  domain: {
+    type: DataTypes.STRING,
+    unique: true
   },
+  header_url: { type: DataTypes.STRING, defaultValue: '' },
   state: {
     type: DataTypes.BOOLEAN,
     defaultValue: true
   }
 })
 
-user.hasMany(menus, { foreignKey: 'id_user', onDelete: 'CASCADE' })
-menus.belongsTo(user, { foreignKey: 'id_user' })
-
-// const url = sqConexion.define('url', {
-//   id: {
-//     type: DataTypes.INTEGER,
-//     autoIncrement: true,
-//     primaryKey: true
-//   },
-//   id_menu: {
-//     type: DataTypes.INTEGER,
-//     allowNull: false
-//   },
-//   id_user: {
-//     type: DataTypes.INTEGER,
-//     allowNull: false
-//   },
-//   state: {
-//     type: DataTypes.BOOLEAN,
-//     allowNull: false,
-//     defaultValue: false
-//   }
-//   // url: {
-//   //   type: DataTypes.STRING,
-//   //   allowNull: false
-//   // }
-// })
+restaurant.hasMany(menus, { foreignKey: 'id_restaurant', onDelete: 'CASCADE' })
+menus.belongsTo(restaurant, { foreignKey: 'id_restaurant' })
 
 const categories = sqConexion.define('categories', {
   id: {
@@ -187,99 +173,76 @@ const categories = sqConexion.define('categories', {
     autoIncrement: true,
     primaryKey: true
   },
-  // id_menu: {
-  //   type: DataTypes.INTEGER,
-  //   allowNull: false
-  // },
-
-  name: {
-    type: DataTypes.STRING,
+  id_menu: {
+    type: DataTypes.INTEGER,
     allowNull: false
+  },
+  pos: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
   }
 })
 
 menus.hasMany(categories, { foreignKey: 'id_menu', onDelete: 'CASCADE' })
 categories.belongsTo(menus, { foreignKey: 'id_menu' })
 
-const logo = sqConexion.define('logo', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
-  },
-  // id_menu: {
-  //   type: DataTypes.INTEGER,
-  //   allowNull: false
-  // },
-
-  img: {
-    type: DataTypes.TEXT,
-    allowNull: false
-  },
-  used: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false
-  }
+const categoriesDetails = sqConexion.define('categoriesDetails', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  id_cat: { type: DataTypes.INTEGER, allowNull: false },
+  name: { type: DataTypes.STRING, allowNull: false },
+  desc: { type: DataTypes.STRING, defaultValue: '' }
 })
 
-menus.hasMany(logo, { foreignKey: 'id_menu', onDelete: 'CASCADE' })
-logo.belongsTo(menus, { foreignKey: 'id_menu' })
+categories.hasOne(categoriesDetails, {
+  foreignKey: 'id_cat',
+  onDelete: 'CASCADE'
+})
+categoriesDetails.belongsTo(categories, { foreignKey: 'id_cat' })
 
 const food = sqConexion.define('food', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true
-  },
-  // id_menu: {
-  //   type: DataTypes.INTEGER,
-  //   allowNull: false,
-  //   references: {
-  //     model: menus,
-  //     key: id
-  //   }
-  // },
-  // id_cat:{
-  //   type:DataTypes.INTEGER,
-  //   allowNull:false,
-  //   references:{
-  //     model:categories,
-  //     key:id
-  //   }
-  // },
-  img: {
-    type: DataTypes.TEXT,
-    allowNull: false
-  },
-  price: DataTypes.DOUBLE,
-  desc: DataTypes.TEXT,
-  fav: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: false
-  },
-  glutenFree: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false
-  }
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  id_cat: { type: DataTypes.INTEGER, allowNull: false },
+  state: { type: DataTypes.BOOLEAN, allowNull: false },
+  pos: { type: DataTypes.INTEGER, allowNull: false }
 })
 
-menus.hasMany(food, { foreignKey: 'id_menu', onDelete: 'CASCADE' })
-food.belongsTo(menus, { foreignKey: 'id_menu' })
+categories.hasMany(food, { foreignKey: 'id_cat', onDelete: 'CASCADE' })
+food.belongsTo(categories, { foreignKey: 'id_cat' })
 
-categories.hasMany(food, { foreignKey: 'id_cats', onDelete: 'CASCADE' })
-food.belongsTo(categories, { foreignKey: 'id_cats' })
+const foodDetails = sqConexion.define('foodDetails', {
+  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+  id_food: { type: DataTypes.INTEGER, allowNull: false },
+  img: { type: DataTypes.STRING, defaultValue: '' },
+  price: { type: DataTypes.FLOAT, allowNull: false },
+  name: { type: DataTypes.STRING, allowNull: false },
+  star: { type: DataTypes.BOOLEAN, defaultValue: false },
+  desc: { type: DataTypes.STRING, defaultValue: '' }
+})
+
+food.hasOne(foodDetails, {
+  foreignKey: 'id_food',
+  onDelete: 'CASCADE'
+})
+foodDetails.belongsTo(food, { foreignKey: 'id_food' })
+
+// menus.hasMany(food, { foreignKey: 'id_menu', onDelete: 'CASCADE' })
+// food.belongsTo(menus, { foreignKey: 'id_menu' })
+
+// categories.hasMany(food, { foreignKey: 'id_cats', onDelete: 'CASCADE' })
+// food.belongsTo(categories, { foreignKey: 'id_cats' })
 
 //   console.log(user === sqConexion.models.user)
 export const models = {
-  logo,
+  sqConexion,
   menus,
   user,
   categories,
-  sqConexion,
-  // favs,
+  restaurant,
+  categories,
+  categoriesDetails,
   food,
-  subs,
+  foodDetails,
+  subs
   // url,
-  invitedCode
+  // invitedCode
 }

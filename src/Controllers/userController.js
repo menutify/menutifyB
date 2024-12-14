@@ -1,24 +1,26 @@
 import { models } from '../Models/allModels.js'
 import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-import { createJWT, verifyJWT } from '../helper/JWT.js'
-import { transporter } from '../helper/mailerConfig.js'
-import { confirmAccountMail } from '../database/mailModels.js'
-import { setTokenToCookies } from '../helper/cookieManipulation.js'
 
-const getUser = async (req, res) => {
+const getUserById = async (req, res) => {
   try {
-    const users = await models.user.findAll()
-    return res.json(users)
+    const { email, id } = req.user
+    const user = await models.user.findByPk(id)
+    if (!user)
+      return res
+        .status(404)
+        .json({ error: true, msg: 'no se encontro los datos del usuario' })
+    console.log(user)
+
+    return res.status(200).json({ error: false, data: user, msg: 'ok' })
   } catch (error) {
+    console.log({ error })
     res.status(400).json({
-      data: 'Se presento un error al obtener la lista de Usuarios',
-      error:true,
+      data: 'Se presento un error al obtener el usuario',
+      error: true,
       data: { error }
     })
   }
 }
-
 
 //!-----------------uso postman
 const changeUserNewDetail = async (req, res) => {
@@ -80,10 +82,10 @@ const deleteUser = async (req, res) => {
 }
 
 export const userControllerFunctions = {
-  getUser,
-  
+  getUserById,
+
   deleteUser,
   changeUserNewDetail,
- 
+
   putUser
 }

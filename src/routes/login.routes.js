@@ -24,7 +24,9 @@ loginRouter.post(
   ],
   loginController.normalLogin
 )
+
 loginRouter.post('/google', userExistWGoogle, loginController.networkLogin)
+
 loginRouter.post('/facebook', userExistWFacebook, loginController.networkLogin)
 
 loginRouter.get('/logout', (req, res) => {

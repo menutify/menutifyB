@@ -26,6 +26,31 @@ export const confirmAccountMail = (to, link) => {
   }
 }
 
+export const webhookPaymentMP = (
+  metadata,
+  status_detail,
+  idPayment,
+  name,
+  c_date,
+  f_date
+) => {
+  return {
+    from: 'no-reply@menutify.com',
+    to: metadata.email,
+    subject: 'Recibo de pago en Menutify',
+    html: `
+    <p>Hola,</p>
+    <p>cliente: ${name}</p>
+    <p>amountPaid: 1000$ ARS</p>
+    <p>fecha de Pago: ${c_date}</p>
+    <p>fecha de Vencimiento: ${f_date}</p>
+    <p>cod: ${status_detail}</p>
+    <p>paymentIntentId: ${idPayment}</p>
+    
+  `
+  }
+}
+
 export const webhookInformation = (
   to,
   client,

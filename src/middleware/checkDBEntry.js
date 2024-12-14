@@ -7,7 +7,7 @@ import verify from '../helper/verifyIdToken.js'
 export const userExistInBody = async (req, res, next) => {
   try {
     const { email } = req.body
-    console.log({ email })
+
     const user = await models.user.findOne({
       where: { email }
     })
@@ -26,8 +26,6 @@ export const userExistInBody = async (req, res, next) => {
       isNew: user.new,
       subActive: user.subActive
     }
-
-    console.log(req.user)
 
     next()
   } catch (error) {
@@ -68,12 +66,14 @@ export const userExistWGoogle = async (req, res, next) => {
     if (user) {
       const token = createJWT({ email, id: user.id }, req)
 
-      setTokenToCookies(res, token)
+      setTokenToCookies(res, token.token)
+      const partialToken=token.token.slice(-25)
+      await models.user.update({ token:partialToken }, { where: { id: user.id } })
 
       res.status(203).json({
         msg: 'Usuario ya existe',
         error: false,
-        data: { new: user.new, email }
+        data: { isNew: user.new, email, id: user.id, subActive: user.subActive }
       })
       return
     }
@@ -81,6 +81,7 @@ export const userExistWGoogle = async (req, res, next) => {
     req.user = { email, name, password, session: 'google' }
     next()
   } catch (error) {
+    console.log({ error })
     res.status(500).json({
       msg: 'Error user exist with google',
       error: true,
@@ -93,17 +94,22 @@ export const userExistWFacebook = async (req, res, next) => {
   try {
     const { email, name, id: password } = req.body
 
+    console.log({ body: req.body })
+
     const user = await models.user.findOne({ where: { email } })
 
     if (user) {
-      const token = createJWT({ email, id: user.id })
+      console.log('entramos')
+      const token = createJWT({ email, id: user.id }, req)
 
-      setTokenToCookies(res, token)
-
+      setTokenToCookies(res, token.token)
+      const partialToken=token.token.slice(-25)
+    await models.user.update({ token:partialToken }, { where: { id: user.id } })
+      
       return res.status(203).json({
         msg: 'Usuario ya existe',
         error: false,
-        data: { new: user.new, email }
+        data: { isNew: user.new, email, id: user.id, subActive: user.subActive }
       })
     }
 
