@@ -7,7 +7,7 @@ import {
 
 export const verifyExistJWT = async (req, res, next) => {
   const authToken = getTokenFromCookies(req)
-  console.log({ authToken })
+  console.log({ authToken, cookies: req.signedCookies })
   if (!authToken || authToken == undefined) {
     console.log('authtoken no existe')
     res.status(404).json({ msg: 'Token no existe', error: true })
