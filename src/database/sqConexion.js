@@ -1,10 +1,13 @@
 import { Sequelize } from 'sequelize'
+import dotenv from 'dotenv'
 
-const database = 'menu'
-const username = 'root'
-const password = 'enig12ma34'
-const host = 'localhost'
-const port = 3306
+dotenv.config()
+
+const database = process.env.BD_DATABASE
+const username = process.env.BD_USERNAME
+const password = process.env.DB_PASSWORD
+const host = process.env.DB_HOST
+const port = process.env.DB_PORT
 
 const sqConexion = new Sequelize(database, username, password, {
   host: host,
@@ -16,7 +19,5 @@ const sqConexion = new Sequelize(database, username, password, {
   },
   logging: false
 })
-
-
 
 export default sqConexion
