@@ -17,13 +17,13 @@ export const verifyExistJWT = async (req, res, next) => {
 
   const tokenPatial = authToken.slice(-25)
 
-  console.log({ tokenPatial })
+  // console.log({ tokenPatial })
   //indicar que el token sea igual al de la bd
   const existToken = await models.user.findOne({
     where: { id: data.id }
   })
 
-  console.log({ existToken: existToken?.dataValues.token })
+  // console.log({ existToken: existToken?.dataValues.token })
   if (!existToken || existToken?.dataValues.token != tokenPatial) {
     res.status(226).json({ msg: 'Se detecto que la cuenta esta siendo usada en otro dispositivo', error: true })
     return

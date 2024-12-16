@@ -360,6 +360,23 @@ const editFood = async (req, res) => {
   }
 }
 
+const handleStateFromFood = async (req, res) => {
+  const { id_food } = req.params
+  const { state } = req.body
+  try {
+    await models.food.update({ state }, { where: { id: id_food } })
+
+    res
+      .status(200)
+      .json({ error: false, msg: 'Cambio de estado', data: { resp: 'ok' } })
+  } catch (error) {
+    console.log(error)
+    res
+      .status(500)
+      .json({ error: true, msg: 'Error global al cambiar el estado' })
+  }
+}
+
 const deleteFood = async (req, res) => {
   const { id } = req.params
   try {
@@ -455,7 +472,7 @@ export const catController = {
   getAllFoodsForIdMenu,
   getCategoriesWithCascadeData,
   editFood,
-  deleteCategory
+  deleteCategory,handleStateFromFood
 }
 
 /*

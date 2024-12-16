@@ -18,7 +18,11 @@ restaurantRouter.post(
   restaurantController.uploadLogoRestaurant
 )
 
-restaurantRouter.delete('/delete/:name', restaurantController.deleteImage)
+restaurantRouter.delete(
+  '/delete/:name',
+  verifyExistJWT,
+  restaurantController.deleteImage
+)
 
 // restaurantRouter.post(
 //   '/restaurant-header',

@@ -2,18 +2,19 @@ import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
+//models and bd conexion
+import { models } from '../Models/allModels.js'
 //routes
 import userRoute from '../routes/user.routes.js'
 import subRouter from '../routes/sub.routes.js'
 import paymentRouter from '../routes/payment.routes.js'
-//models and bd conexion
-import { models } from '../Models/allModels.js'
 import loginRouter from '../routes/login.routes.js'
 import authRouter from '../routes/auth.routes.js'
 import createAccountRouter from '../routes/createAccount.routes.js'
 import restaurantRouter from '../routes/restaurant.routes.js'
 import menuRouter from '../routes/menu.routes.js'
 import catRouter from '../routes/cat.routes.js'
+import dragRouter from '../routes/drag.routes.js'
 class Server {
   constructor() {
     // iniciamos express en una variable
@@ -46,15 +47,16 @@ class Server {
       })
     )
     // Rutas de la aplicacion
-    this.app.use('/api/user', userRoute)
+    this.app.use('/api/auth', authRouter)
+    this.app.use('/api/login', loginRouter)
+    this.app.use('/api/create-account', createAccountRouter)
+    this.app.use('/api/payment', paymentRouter)
     this.app.use('/api/sub', subRouter)
+    this.app.use('/api/user', userRoute)
     this.app.use('/api/restaurant', restaurantRouter)
     this.app.use('/api/menu', menuRouter)
     this.app.use('/api/cat', catRouter)
-    this.app.use('/api/login', loginRouter)
-    this.app.use('/api/auth', authRouter)
-    this.app.use('/api/create-account', createAccountRouter)
-    this.app.use('/api/payment', paymentRouter)
+    this.app.use('/api/drag',dragRouter)
   }
 
   //metodo asincrono de coneccion con BD

@@ -14,15 +14,22 @@ catRouter.get('/:id', catController.getAllCategoriesForIdMenu)
 catRouter.get('/food/:id', catController.getAllFoodsForIdMenu)
 catRouter.get(
   '/cascade_categories/:id',
+  
   catController.getCategoriesWithCascadeData
 )
-catRouter.patch('/:id', catController.editCategory)
+catRouter.patch('/:id', verifyExistJWT, catController.editCategory)
 catRouter.patch(
   '/food/:id',
   [verifyExistJWT, multerMiddleware],
   catController.editFood
 )
-catRouter.delete('/food/:id', catController.deleteFood)
-catRouter.delete('/:id',catController.deleteCategory)
+catRouter.patch(
+  '/food/state/:id_food',
+  verifyExistJWT,
+  catController.handleStateFromFood
+)
+
+catRouter.delete('/food/:id', verifyExistJWT, catController.deleteFood)
+catRouter.delete('/:id', verifyExistJWT, catController.deleteCategory)
 
 export default catRouter
