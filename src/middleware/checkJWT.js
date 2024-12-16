@@ -7,7 +7,7 @@ import {
 
 export const verifyExistJWT = async (req, res, next) => {
   const authToken = getTokenFromCookies(req)
-
+  console.log({ authToken })
   if (!authToken || authToken == undefined) {
     console.log('authtoken no existe')
     res.status(404).json({ msg: 'Token no existe', error: true })
@@ -27,12 +27,10 @@ export const verifyExistJWT = async (req, res, next) => {
   // console.log({ existToken: existToken?.dataValues.token })
   if (!existToken || existToken?.dataValues.token != tokenPatial) {
     console.log('existoken no existe o no es igual al de la base de datos')
-    res
-      .status(226)
-      .json({
-        msg: 'Se detecto que la cuenta esta siendo usada en otro dispositivo',
-        error: true
-      })
+    res.status(226).json({
+      msg: 'Se detecto que la cuenta esta siendo usada en otro dispositivo',
+      error: true
+    })
     return
   }
   if (error) {
