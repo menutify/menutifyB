@@ -10,8 +10,7 @@ const createPayment = async (req, res) => {
   const { user, ...bodyData } = req.body
   console.log({ user, bodyData })
   try {
-
-    
+    console.log({ oldMetadata: user })
     const { id, ...values } = await payment.create({
       body: { ...bodyData, metadata: user }
     })
@@ -25,14 +24,13 @@ const createPayment = async (req, res) => {
       data: { status: values.status, status_detail: values.status_detail }
     })
   } catch (error) {
+    console.log('error al crear el pago')
     console.log({ error })
-    return res
-      .status(500)
-      .json({
-        error: true,
-        data: {},
-        msg: 'Verifique que los datos del medio de pago'
-      })
+    return res.status(500).json({
+      error: true,
+      data: {},
+      msg: 'Verifique que los datos del medio de pago'
+    })
   }
 }
 
@@ -115,7 +113,13 @@ const webhookPayment = async (req, res) => {
           transaction_amount
         } = data
 
-        console.log({ status, status_detail, date_created, transaction_amount })
+        console.log({
+          status,
+          status_detail,
+          date_created,
+          transaction_amount,
+          metadata
+        })
         //no verifico el email o id que pertenezca a un usuario, porque en este punto ya deberia estar conectado
 
         // // //manejo interno de la fecha , ya que es un pago unico
@@ -131,6 +135,8 @@ const webhookPayment = async (req, res) => {
             f_date,
             state: true
           }
+
+          console.log({ objectSub })
 
           await models.subs.create(objectSub)
 
@@ -190,6 +196,7 @@ const webhookPayment = async (req, res) => {
 
     res.status(200).send('OK')
   } catch (error) {
+    console.log('error en el webhook')
     console.log({ error })
     return res.status(500)
   }
