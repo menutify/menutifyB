@@ -8,7 +8,10 @@ const createPayment = async (req, res) => {
   //user : metadata  tipo User
   //bodyData: datos de pago
   const { user, ...bodyData } = req.body
+  console.log({ user, bodyData })
   try {
+
+    
     const { id, ...values } = await payment.create({
       body: { ...bodyData, metadata: user }
     })
@@ -23,11 +26,13 @@ const createPayment = async (req, res) => {
     })
   } catch (error) {
     console.log({ error })
-    return res.status(500).json({
-      error: true,
-      data: {},
-      msg: 'Verifique que los datos del medio de pago'
-    })
+    return res
+      .status(500)
+      .json({
+        error: true,
+        data: {},
+        msg: 'Verifique que los datos del medio de pago'
+      })
   }
 }
 
