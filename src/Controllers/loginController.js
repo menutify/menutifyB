@@ -13,9 +13,9 @@ const normalLogin = async (req = request, res = response) => {
 
     setTokenToCookies(res, token)
     //guardo el token en la bd
-    const partialToken=token.slice(-25)
-    await models.user.update({ token:partialToken }, { where: { id: id } })
-    
+    const partialToken = token.slice(-25)
+    await models.user.update({ token: partialToken }, { where: { id: id } })
+
     res.status(200).json({ msg, error, data: { email, id, isNew, subActive } })
   } catch (error) {
     return res.status(500).json({
@@ -37,16 +37,19 @@ const networkLogin = async (req, res) => {
       password: hashedPassword,
       session
     })
-
+    console.log({ user })
     console.log(`usuario creado con ${session} `)
 
     const token = createJWT({ email, id: user.id }, req)
     console.log({ token })
     setTokenToCookies(res, token.token)
     //guardo el token en la bd
-    const partialToken=token.slice(-25)
-    await models.user.update({ token:partialToken }, { where: { id: user.id } })
-    
+    const partialToken = token.slice(-25)
+    await models.user.update(
+      { token: partialToken },
+      { where: { id: user.dataValues.id } }
+    )
+
     res.status(200).json({
       msg: 'Usuario creado',
       error: false,

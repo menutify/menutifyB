@@ -1,10 +1,11 @@
 import { Router } from 'express'
 
 import paymentMPController from '../Controllers/paymentMPController.js'
+import { verifyExistJWT } from '../middleware/checkJWT.js'
 
 const paymentRouter = Router()
 
-paymentRouter.post('/create-payment', paymentMPController.createPayment)
+paymentRouter.post('/create-payment',verifyExistJWT, paymentMPController.createPayment)
 
 paymentRouter.post('/webhook-payment', paymentMPController.webhookPayment)
 
