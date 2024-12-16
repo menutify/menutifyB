@@ -33,14 +33,14 @@ loginRouter.get('/logout', (req, res) => {
   const cookies = req.signedCookies.authToken
   // Si la cookie existe, la eliminamos
   if (cookies) {
-    console.log('la cookie existe: ', cookies)
+    // console.log('la cookie existe: ', cookies)
     deleteTokenFromCookies(res)
     // Respuesta correcta de logout
-    return res.json({ msg: 'Logout exitoso' })
+    return res.status(200).json({ msg: 'Logout exitoso' })
   } else {
     console.log('la cookie no existe')
     // Si no hay cookie, significa que no estaba logueado
-    return res.json({ msg: 'No se encuentra autenticado' })
+    return res.status(404).json({ msg: 'No se encuentra autenticado' })
   }
 })
 

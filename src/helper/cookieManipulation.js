@@ -28,7 +28,8 @@ export const getTokenFromCookies = (req) => {
 export const deleteTokenFromCookies = (res) => {
   res.clearCookie('authToken', {
     httpOnly: true, // Asegura que la cookie no sea accesible desde el frontend con JavaScript
-    secure: false, // Coincide con la configuración al crearla (no usar HTTPS)
+    secure: process.env.NODE_ENV === 'production', // Coincide con la configuración al crearla (no usar HTTPS)
+    sameSite: 'None',
     signed: true // Coincide con la firma de la cookie
   })
 }
