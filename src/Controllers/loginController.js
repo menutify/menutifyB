@@ -37,14 +37,18 @@ const networkLogin = async (req, res) => {
       password: hashedPassword,
       session
     })
-    console.log({ user })
+
     console.log(`usuario creado con ${session} `)
 
-    const token = createJWT({ email, id: user.id }, req)
-    console.log({ token })
+    const token = createJWT({ email, id: user.dataValues.id }, req)
+
+    if (!token.token) {
+      return res.status(400).json({ error: token.error, msg: token.msg })
+    }
+
     setTokenToCookies(res, token.token)
     //guardo el token en la bd
-    const partialToken = token.slice(-25)
+    const partialToken = token.token.slice(-25)
     await models.user.update(
       { token: partialToken },
       { where: { id: user.dataValues.id } }
