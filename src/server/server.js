@@ -39,9 +39,24 @@ class Server {
       }
     })
 
+    const whitelist = [
+      'https://menutify-f-fuuu.vercel.app',
+      'http://localhost:5173'
+    ]
+
+    const corsOptions = {
+      origin: function (origin, callback) {
+        if (whitelist.indexOf(origin) !== -1) {
+          callback(null, true)
+        } else {
+          callback(new Error('Not allowed by CORS'))
+        }
+      }
+    }
+
     this.app.use(
       cors({
-        origin: 'http://localhost:5173',
+        origin: corsOptions.origin,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
         credentials: true
       })
@@ -56,7 +71,7 @@ class Server {
     this.app.use('/api/restaurant', restaurantRouter)
     this.app.use('/api/menu', menuRouter)
     this.app.use('/api/cat', catRouter)
-    this.app.use('/api/drag',dragRouter)
+    this.app.use('/api/drag', dragRouter)
   }
 
   //metodo asincrono de coneccion con BD
