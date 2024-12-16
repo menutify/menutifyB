@@ -6,11 +6,11 @@ export const setTokenToCookies = (res, content, name = 'authToken') => {
   // enviar el token por res
   res.cookie(name, content, {
     httpOnly: true,
-    secure: true, // Asegúrate de que esté en HTTPS
-    sameSite: 'None', // Necesario para cookies entre dominios
-    maxAge: 24 * 60 * 60 * 1000, // 24 horas en milisegundos
-    domain: '.vercel.app', // Configurado para el dominio de Vercel
-    signed: true
+    secure: process.env.NODE_ENV === 'production', // Asegúrate de que se use HTTPS
+  sameSite: 'None', // Necesario para cookies entre dominios
+  maxAge: 24 * 60 * 60 * 1000, // 1 día
+  domain: process.env.NODE_ENV === 'production' ? 'menutify-f-fuuu.vercel.app' : 'localhost', // Asegúrate de que el dominio esté correcto
+  signed: true
   })
 
   // res.cookie(name, content, {
