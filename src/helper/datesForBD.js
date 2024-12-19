@@ -1,3 +1,8 @@
+/**
+ * this have the real date and the next day
+ * @param {*} date
+ * @returns
+ */
 export const datesStringForBD = (date) => {
   const startDate = new Date(date)
 

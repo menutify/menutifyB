@@ -1,7 +1,9 @@
 import express from 'express'
+import http from 'http'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import morgan from 'morgan'
+import { Server as SocketIO } from 'socket.io'
 //models and bd conexion
 import { models } from '../Models/allModels.js'
 //routes
@@ -17,13 +19,33 @@ import catRouter from '../routes/cat.routes.js'
 import dragRouter from '../routes/drag.routes.js'
 class Server {
   constructor() {
+    const whitelist = [
+      'http://localhost:5173',
+      'https://menutify-f-fuuu.vercel.app'
+    ]
     // iniciamos express en una variable
     this.app = express()
+    this.server = http.createServer(this.app)
+
+    this.io = new SocketIO(this.server, {
+      cors: {
+        origin: whitelist,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+        credentials: true
+      }
+    })
+    this.app.set('io', this.io)
     // definimos los puertos
     this.port = process.env.PORT || '3000'
-    //Conectar base de datos
-    // conexionDB()
+    //iniciamos los metodos
+    this.initMiddlewares(whitelist)
+    this.initRoutes()
+    this.initWebSocket()
     this.initDB()
+  }
+
+  //--------------------------------------------------------------------------
+  initMiddlewares(whitelist) {
     // Middlewares
     this.app.use(express.static('src/public'))
     this.app.use(morgan('dev'))
@@ -33,20 +55,13 @@ class Server {
         // Para la ruta de webhook, usa express.raw para mantener el body en Buffer
         express.raw({ type: 'application/json' })(req, res, next)
       } else {
-        console.log({ path1: req.path })
-        // Para el resto de la app, usa express.json
         express.json()(req, res, next)
       }
     })
 
-    const whitelist = [
-      'https://menutify-f-fuuu.vercel.app',
-      'http://localhost:5173'
-    ]
-
     const corsOptions = {
       origin: function (origin, callback) {
-        if (whitelist.indexOf(origin) !== -1|| !origin) {
+        if (whitelist.indexOf(origin) !== -1 || !origin) {
           callback(null, true)
         } else {
           callback(new Error('Not allowed by CORS'))
@@ -61,7 +76,11 @@ class Server {
         credentials: true
       })
     )
-    // Rutas de la aplicacion
+  }
+
+  //--------------------------------------------------------------------------
+  initRoutes() {
+    // Define las rutas de tu aplicación
     this.app.use('/api/auth', authRouter)
     this.app.use('/api/login', loginRouter)
     this.app.use('/api/create-account', createAccountRouter)
@@ -74,8 +93,26 @@ class Server {
     this.app.use('/api/drag', dragRouter)
   }
 
+  //--------------------------------------------------------------------------
   //metodo asincrono de coneccion con BD
+  initWebSocket() {
+    this.io.on('connection', (socket) => {
+      const userId = socket.handshake.query.user_id
+      try {
+        // console.log('Usuario conectado: ' + userId + ' -> socketId:', socket.id)
+        // crea una sala con el id del usuario
+        socket.join(userId)
+      } catch (error) {
+        console.error('Error en la conexión de socket:', error)
+      }
+      // Manejo de eventos
+      socket.on('disconnect', () => {
+        // console.log('Usuario desconectado: ', socket.id)
+      })
+    })
+  }
 
+  //--------------------------------------------------------------------------
   async initDB() {
     try {
       //autenticando conexion
@@ -92,7 +129,7 @@ class Server {
 
   // Iniciar API
   listen() {
-    this.app.listen(this.port, () => {
+    this.server.listen(this.port, () => {
       console.log('servidor levantado en el puerto: ', this.port)
     })
   }

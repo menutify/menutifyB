@@ -213,7 +213,7 @@ const foodDetails = sqConexion.define('foodDetails', {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   id_food: { type: DataTypes.INTEGER, allowNull: false },
   img: { type: DataTypes.STRING, defaultValue: '' },
-  price: { type: DataTypes.FLOAT, allowNull: false },
+  price: { type: DataTypes.DECIMAL(13,2), allowNull: false },
   name: { type: DataTypes.STRING, allowNull: false },
   star: { type: DataTypes.BOOLEAN, defaultValue: false },
   desc: { type: DataTypes.STRING, defaultValue: '' }

@@ -5,30 +5,39 @@ import { transporter } from '../helper/mailerConfig.js'
 import { models } from '../Models/allModels.js'
 
 const createPayment = async (req, res) => {
-  //user : metadata  tipo User
-  //bodyData: datos de pago
-  const { user, ...bodyData } = req.body
-  console.log({ user, bodyData })
+  const { id: id_user, email } = req.user
+  const bodyData = req.body
+
   try {
-    console.log({ oldMetadata: user })
     const { id, ...values } = await payment.create({
-      body: { ...bodyData, metadata: user }
+      body: { ...bodyData, metadata: { id: id_user, email } }
     })
 
-    console.log({ datapayment: id })
+    if (!id) {
+      return res.status(400).json({
+        error: true,
+        msg: 'No se pudo realizar el pago, vuelva a intentar o pruebe con otra tarjeta'
+      })
+    }
+
+    console.log({ status: values.status, details: values.status_detail })
+    // obtengo io de express
+    const io = req.app.get('io')
+
+    // Emitir evento al frontend
+    io.to(id_user).emit('paymentCreated', { paymentId: id })
 
     return res.status(200).json({
       error: false,
 
-      msg: 'Pago procesado',
+      msg: 'Pago procesandose',
       data: { status: values.status, status_detail: values.status_detail }
     })
   } catch (error) {
     console.log('error al crear el pago')
-    console.log({ error })
+    console.log({})
     return res.status(500).json({
       error: true,
-      data: {},
       msg: 'Verifique que los datos del medio de pago'
     })
   }
@@ -76,13 +85,11 @@ const createSubscription = async (req, res) => {
 
 const webhookPayment = async (req, res) => {
   try {
-    // Responde correctamente a Mercado Pago para que se sepa que el webhook fue procesado
-    const queries = req.query
+    // const queries = req.query // { 'data.id': '1320644758', type: 'payment' }
     const notification = req.body
 
-    console.log({ queries })
     /**
- *   notification: {
+     *   notification: {
     action: 'payment.created',
     api_version: 'v1',
     data: { id: '1320438096' },
@@ -91,70 +98,102 @@ const webhookPayment = async (req, res) => {
     live_mode: false,
     type: 'payment',
     user_id: '1570773738'
-  }
+    }
+    
+    */
+    //websocket
+    const io = req.app.get('io')
 
- */
     // El código de estado de la transacción
-    const paymentAction = notification.action
-
+    const paymentAction = notification.action // 'payment.created'
+    console.log({ paymentAction })
     // Realiza acciones según el estado de la transacción
     switch (paymentAction) {
       case 'payment.created':
-        console.log('Pago creado')
-
         const data = await payment.get({ id: notification.data.id })
 
-        const {
-          metadata,
-          date_created,
-          status,
-          status_detail,
-          id: idpayment,
-          transaction_amount
-        } = data
+        if (!data.id) {
+          io.to(id).emit('paymentStatus', {
+            status: 'rejected',
+            status_detail: 'obtain payment id failed'
+          })
+          return res.status(500)
+        }
 
-        console.log({
+        const {
           status,
           status_detail,
           date_created,
           transaction_amount,
-          metadata
-        })
-        //no verifico el email o id que pertenezca a un usuario, porque en este punto ya deberia estar conectado
+          metadata,
+          id: idpayment
+        } = data
 
-        // // //manejo interno de la fecha , ya que es un pago unico
+        /*
+        {
+        status: 'approved',
+        status_detail: 'accredited',
+        date_created: '2024-12-18T23:15:30.113-04:00',
+        transaction_amount: 1000,
+        metadata: {
+        id: '2c22bbe3-079c-41c6-b525-f5240fad0f21',
+        email: 'gianco3108@gmail.com'
+        }
+        }
+        */
+        //no verifico el email o id que pertenezca a un usuario, porque en este punto ya deberia estar conectado
+        console.log({ status_detail ,status})
+        //manejo interno de la fecha , ya que es un pago unico
         if (status_detail === 'accredited') {
           const { id, email } = metadata
           const [c_date, f_date] = datesStringForBD(date_created)
-          const id_pay = notification.data.id
 
           const objectSub = {
             id_user: id,
-            id_pay,
+            id_pay:idpayment,
             c_date,
             f_date,
             state: true
           }
 
-          console.log({ objectSub })
+          /**
+            {
+              id_user: '2c22bbe3-079c-41c6-b525-f5240fad0f21',
+              id_pay: '1320644758',
+              c_date: '2024-12-19',
+              f_date: '2025-01-19',
+              state: true
+            }
 
+          */
+
+          //creamos la nueva sub
           await models.subs.create(objectSub)
 
+          //actualizamos los datos del usuario
           await models.user.update(
             { new: false, subActive: true },
             { where: { id, email } }
           )
+
+          //obtnemos el nombre del usuario
           const nameUser = await models.user.findOne({
             where: { id },
             attributes: ['name'] // Selecciona solo la columna que necesitas
           })
           // envio de correo con factura del pago
 
+          // Notifica al cliente conectado por WebSocket
+          io.to(id).emit('paymentStatus', {
+            status,
+            status_detail
+          })
+
           const mailOptions = webhookPaymentMP(
             metadata,
             status_detail,
             idpayment,
-            nameUser,
+            nameUser.dataValues.name,
             c_date,
             f_date
           )

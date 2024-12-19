@@ -44,7 +44,7 @@ export const webhookPaymentMP = (
     <p>amountPaid: 1000$ ARS</p>
     <p>fecha de Pago: ${c_date}</p>
     <p>fecha de Vencimiento: ${f_date}</p>
-    <p>cod: ${status_detail}</p>
+    <p>estado: ${status_detail}</p>
     <p>paymentIntentId: ${idPayment}</p>
     
   `
