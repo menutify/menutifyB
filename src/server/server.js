@@ -17,12 +17,13 @@ import restaurantRouter from '../routes/restaurant.routes.js'
 import menuRouter from '../routes/menu.routes.js'
 import catRouter from '../routes/cat.routes.js'
 import dragRouter from '../routes/drag.routes.js'
+import appRouter from '../routes/app.routes.js'
 class Server {
   constructor() {
     const whitelist = [
       'http://localhost:5173',
       'https://menutify-f-fuuu.vercel.app',
-      'https://front-q-rmenutify.vercel.app/'
+      'https://front-q-rmenutify.vercel.app/',
     ]
     // iniciamos express en una variable
     this.app = express()
@@ -92,6 +93,7 @@ class Server {
     this.app.use('/api/menu', menuRouter)
     this.app.use('/api/cat', catRouter)
     this.app.use('/api/drag', dragRouter)
+    this.app.use('/api/app', appRouter)
   }
 
   //--------------------------------------------------------------------------
