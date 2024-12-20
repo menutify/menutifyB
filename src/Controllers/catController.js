@@ -308,6 +308,7 @@ const editFood = async (req, res) => {
           msg: 'Error al procesar la imagen'
         })
 
+        
       const cambio = await models.foodDetails.update(
         {
           name,
