@@ -1,4 +1,4 @@
-import { confirmAccountMail, webhookPaymentMP } from '../database/mailModels.js'
+import { webhookPaymentMP } from '../database/mailModels.js'
 import { payment, subscription } from '../helper/connectMP.js'
 import { datesStringForBD } from '../helper/datesForBD.js'
 import { transporter } from '../helper/mailerConfig.js'
@@ -6,8 +6,9 @@ import { models } from '../Models/allModels.js'
 
 const createPayment = async (req, res) => {
   const { id: id_user, email } = req.user
+  console.log(id_user, email)
   const bodyData = req.body
-
+  console.log(bodyData)
   try {
     const { id, ...values } = await payment.create({
       body: { ...bodyData, metadata: { id: id_user, email } }
@@ -106,7 +107,7 @@ const webhookPayment = async (req, res) => {
 
     // El código de estado de la transacción
     const paymentAction = notification.action // 'payment.created'
-    
+
     console.log({ paymentAction })
     // Realiza acciones según el estado de la transacción
     switch (paymentAction) {
