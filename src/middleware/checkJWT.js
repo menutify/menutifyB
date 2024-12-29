@@ -6,16 +6,25 @@ import {
 } from '../helper/cookieManipulation.js'
 
 export const verifyExistJWT = async (req, res, next) => {
-  const authToken = getTokenFromCookies(req)
+  let authToken = getTokenFromCookies(req) || req.query.token
+  console.log('reqquery: ', { quee: req.query.token })
   // console.log({ authToken, cookies: req.signedCookies })
   if (!authToken || authToken == undefined) {
-    console.log('authtoken no existe')
-    res.status(404).json({ msg: 'Token no existe', error: true })
-    return
+    console.log('tokenlocal')
+    return res
+      .status(404)
+      .json({ msg: 'error al obtener el token', error: true })
   }
+  // console.log('autoken local: ', { authToken })
 
   const { error, data, msg } = verifyJWT(authToken)
 
+  if (error) {
+    console.log('error 401')
+    deleteTokenFromCookies(res)
+    res.status(401).json({ msg, error })
+    return
+  }
   const tokenPatial = authToken.slice(-25)
 
   // console.log({ tokenPatial })
@@ -31,12 +40,6 @@ export const verifyExistJWT = async (req, res, next) => {
       msg: 'Se detecto que la cuenta esta siendo usada en otro dispositivo',
       error: true
     })
-    return
-  }
-  if (error) {
-    console.log('error 401')
-    deleteTokenFromCookies(res)
-    res.status(401).json({ msg, error })
     return
   }
 

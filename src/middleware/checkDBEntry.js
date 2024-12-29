@@ -67,13 +67,22 @@ export const userExistWGoogle = async (req, res, next) => {
       const token = createJWT({ email, id: user.id }, req)
 
       setTokenToCookies(res, token.token)
-      const partialToken=token.token.slice(-25)
-      await models.user.update({ token:partialToken }, { where: { id: user.id } })
+      const partialToken = token.token.slice(-25)
+      await models.user.update(
+        { token: partialToken },
+        { where: { id: user.id } }
+      )
 
       res.status(203).json({
         msg: 'Usuario ya existe',
         error: false,
-        data: { isNew: user.new, email, id: user.id, subActive: user.subActive }
+        data: {
+          isNew: user.new,
+          email,
+          id: user.id,
+          subActive: user.subActive,
+          token: token.token
+        }
       })
       return
     }
@@ -103,13 +112,22 @@ export const userExistWFacebook = async (req, res, next) => {
       const token = createJWT({ email, id: user.id }, req)
 
       setTokenToCookies(res, token.token)
-      const partialToken=token.token.slice(-25)
-    await models.user.update({ token:partialToken }, { where: { id: user.id } })
-      
+      const partialToken = token.token.slice(-25)
+      await models.user.update(
+        { token: partialToken },
+        { where: { id: user.id } }
+      )
+
       return res.status(203).json({
         msg: 'Usuario ya existe',
         error: false,
-        data: { isNew: user.new, email, id: user.id, subActive: user.subActive }
+        data: {
+          isNew: user.new,
+          email,
+          id: user.id,
+          subActive: user.subActive,
+          token: token.token
+        }
       })
     }
 

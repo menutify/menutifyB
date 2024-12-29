@@ -98,7 +98,7 @@ const createNewUser = async (req, res) => {
     return res.status(200).json({
       msg: 'Usuario creado correctamente',
       error: false,
-      data: { id, email, new: true, subActive: false }
+      data: { id, email, new: true, subActive: false,token }
     })
   } catch (error) {
     console.log(error.message)

@@ -16,7 +16,9 @@ const normalLogin = async (req = request, res = response) => {
     const partialToken = token.slice(-25)
     await models.user.update({ token: partialToken }, { where: { id: id } })
 
-    res.status(200).json({ msg, error, data: { email, id, isNew, subActive } })
+    res
+      .status(200)
+      .json({ msg, error, data: { email, id, isNew, subActive, token } })
   } catch (error) {
     return res.status(500).json({
       msg: 'Error de logueo',
@@ -57,7 +59,13 @@ const networkLogin = async (req, res) => {
     res.status(200).json({
       msg: 'Usuario creado',
       error: false,
-      data: { isNew: true, email, subActive: false, id: user.id }
+      data: {
+        isNew: true,
+        email,
+        token: token.token,
+        subActive: false,
+        id: user.id
+      }
     })
   } catch (error) {
     res.status(500).json({

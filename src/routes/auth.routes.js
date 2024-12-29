@@ -1,6 +1,10 @@
 import { Router } from 'express'
 import { authController } from '../Controllers/authController.js'
-import { verifyExistJWT, verifyDataFromJWT, verifyExistJWTinHeaders } from '../middleware/checkJWT.js'
+import {
+  verifyExistJWT,
+  verifyDataFromJWT,
+  verifyExistJWTinHeaders
+} from '../middleware/checkJWT.js'
 import { emailCheck, passwordCheck } from '../middleware/cheks.js'
 import checking, { passwordEqual } from '../middleware/checkDataEntry.js'
 import { userExistInBody } from '../middleware/checkDBEntry.js'
@@ -22,11 +26,12 @@ authRouter.post(
 authRouter.post(
   '/reset-password',
   [
-      passwordCheck('password'),
-      passwordCheck('repassword'),
-      checking,
-      passwordEqual,
-      verifyExistJWTinHeaders,userExistInBody
+    passwordCheck('password'),
+    passwordCheck('repassword'),
+    checking,
+    passwordEqual,
+    verifyExistJWTinHeaders,
+    userExistInBody
   ],
   authController.resetPassword
 )

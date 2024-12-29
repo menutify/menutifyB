@@ -7,9 +7,12 @@ import { userControllerFunctions } from '../Controllers/userController.js'
 import { emailCheck, nameCheck, passwordCheck } from '../middleware/cheks.js'
 import checking from '../middleware/checkDataEntry.js'
 import { userDontExistInBody } from '../middleware/checkDBEntry.js'
-import { verifyExistJWT, verifyExistJWTinHeaders } from '../middleware/checkJWT.js'
+import {
+  verifyExistJWT,
+  verifyExistJWTinHeaders
+} from '../middleware/checkJWT.js'
 //!--------uso Postman
-userRouter.get('/id',verifyExistJWT, userControllerFunctions.getUserById)
+userRouter.get('/id', verifyExistJWT, userControllerFunctions.getUserById)
 
 //!--------uso Postman
 // userRouter.put('/', userControllerFunctions.changeUserNewDetail)

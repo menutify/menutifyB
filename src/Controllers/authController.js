@@ -20,7 +20,7 @@ export const getMe = async (req, res) => {
     res.status(200).json({
       msg: 'Ingreso autorizado',
       error: false,
-      data: { id, isNew, email, subActive }
+      data: { id, isNew, email, subActive,token }
     })
   } catch (error) {
     console.log({ error })

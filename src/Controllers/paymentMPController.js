@@ -106,10 +106,12 @@ const webhookPayment = async (req, res) => {
 
     // El código de estado de la transacción
     const paymentAction = notification.action // 'payment.created'
+    
     console.log({ paymentAction })
     // Realiza acciones según el estado de la transacción
     switch (paymentAction) {
       case 'payment.created':
+        console.log('payment creater')
         const data = await payment.get({ id: notification.data.id })
 
         if (!data.id) {
@@ -142,7 +144,7 @@ const webhookPayment = async (req, res) => {
         }
         */
         //no verifico el email o id que pertenezca a un usuario, porque en este punto ya deberia estar conectado
-        console.log({ status_detail ,status})
+        console.log({ status_detail, status })
         //manejo interno de la fecha , ya que es un pago unico
         if (status_detail === 'accredited') {
           const { id, email } = metadata
@@ -150,7 +152,7 @@ const webhookPayment = async (req, res) => {
 
           const objectSub = {
             id_user: id,
-            id_pay:idpayment,
+            id_pay: idpayment,
             c_date,
             f_date,
             state: true
