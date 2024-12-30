@@ -40,7 +40,7 @@ loginRouter.get('/logout', (req, res) => {
   } else {
     console.log('la cookie no existe')
     // Si no hay cookie, significa que no estaba logueado
-    return res.status(404).json({ msg: 'No se encuentra autenticado' })
+    return res.status(404).json({ msg: 'No se utilizo cookies' })
   }
 })
 

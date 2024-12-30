@@ -38,17 +38,19 @@ const createPayment = async (req, res) => {
     metadata: { id: id_user, email }
   }
 
-  console.log(body)
-
   try {
     const paymentData = await payment.create({
       body
     })
 
-    console.log({ paymentData })
-    if (!paymentData) return res.status(404)
+    if (!paymentData) {
+      return res
+        .status(404)
+        .json({ msg: 'Error al crear el pago, MP', error: true })
+    }
+
     const { id, ...values } = paymentData
-    console.log({ id, values })
+
     if (!id) {
       return res.status(400).json({
         error: true,

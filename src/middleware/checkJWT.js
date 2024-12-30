@@ -7,10 +7,15 @@ import {
 
 export const verifyExistJWT = async (req, res, next) => {
   let authToken = getTokenFromCookies(req) || req.query.token
-  console.log('reqquery: ', { quee: req.query.token })
+  // console.log('reqquery: ', { quee: req.query.token })
   // console.log({ authToken, cookies: req.signedCookies })
-  if (!authToken || authToken == undefined) {
-    console.log('tokenlocal')
+  
+  if (
+    !authToken ||
+    authToken == undefined ||
+    authToken == 'null' ||
+    authToken == ''
+  ) {
     return res
       .status(404)
       .json({ msg: 'error al obtener el token', error: true })
