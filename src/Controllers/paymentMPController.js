@@ -1,19 +1,54 @@
 import { webhookPaymentMP } from '../database/mailModels.js'
-import { payment, subscription } from '../helper/connectMP.js'
+import { subscription } from '../helper/connectMP.js'
 import { datesStringForBD } from '../helper/datesForBD.js'
 import { transporter } from '../helper/mailerConfig.js'
 import { models } from '../Models/allModels.js'
+import { MercadoPagoConfig, Payment } from 'mercadopago'
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+const cliente = new MercadoPagoConfig({
+  accessToken: process.env.MERCADOPAGO_PRIVATE_CREDENTIAL
+})
+
+const payment = new Payment(cliente)
 
 const createPayment = async (req, res) => {
+  // console.log('mycliente: ', { payment })
   const { id: id_user, email } = req.user
-  console.log(id_user, email)
-  const bodyData = req.body
-  console.log(bodyData)
+  // console.log({ id_user, email })
+  // console.log(req.body)
+  const {
+    token,
+    issuer_id,
+    payment_method_id,
+    transaction_amount,
+    installments,
+    payer
+  } = req.body
+
+  const body = {
+    token,
+    issuer_id: parseInt(issuer_id),
+    payment_method_id,
+    transaction_amount,
+    installments,
+    payer,
+    metadata: { id: id_user, email }
+  }
+
+  console.log(body)
+
   try {
-    const { id, ...values } = await payment.create({
-      body: { ...bodyData, metadata: { id: id_user, email } }
+    const paymentData = await payment.create({
+      body
     })
 
+    console.log({ paymentData })
+    if (!paymentData) return res.status(404)
+    const { id, ...values } = paymentData
+    console.log({ id, values })
     if (!id) {
       return res.status(400).json({
         error: true,
@@ -36,7 +71,10 @@ const createPayment = async (req, res) => {
     })
   } catch (error) {
     console.log('error al crear el pago')
-    console.log({})
+    console.log({ error })
+    console.log('Full error:', JSON.stringify(error, null, 2))
+
+    console.log('cause: ', error.cause[0])
     return res.status(500).json({
       error: true,
       msg: 'Verifique que los datos del medio de pago'
