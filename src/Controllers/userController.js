@@ -1,17 +1,19 @@
+import { error } from 'console'
 import { models } from '../Models/allModels.js'
 import bcrypt from 'bcryptjs'
 
 const getUserById = async (req, res) => {
   try {
-    const { email, id } = req.user
+    const { id } = req.user
     const user = await models.user.findByPk(id)
-    if (!user)
+    if (!user.dataValues)
       return res
         .status(404)
         .json({ error: true, msg: 'no se encontro los datos del usuario' })
-    console.log(user)
 
-    return res.status(200).json({ error: false, data: user, msg: 'ok' })
+    return res
+      .status(200)
+      .json({ error: false, data: { userData: user.dataValues }, msg: 'ok' })
   } catch (error) {
     console.log({ error })
     res.status(400).json({
@@ -42,25 +44,27 @@ const changeUserNewDetail = async (req, res) => {
 }
 
 //!-----------------uso postman
-const putUser = async (req, res) => {
+const patchUser = async (req, res) => {
   try {
-    const { id } = req.params
+    const { id } = req.user
 
     const data = req.body
 
     console.log({ data })
-    let newPassword
+
     if (data?.password) {
       data.password = await bcrypt.hash(data.password, 10)
     }
 
     await models.user.update(data, { where: { id } })
 
-    return res.status(200).json({ msg: 'Usuario actualizado' })
+    return res
+      .status(200)
+      .json({ msg: 'Usuario actualizado', error: false, data: { resp: true } })
   } catch (error) {
     res.status(400).json({
       data: 'Se presento un error renovar el Usuario',
-      error
+      error: true
     })
   }
 }
@@ -87,5 +91,5 @@ export const userControllerFunctions = {
   deleteUser,
   changeUserNewDetail,
 
-  putUser
+  patchUser
 }

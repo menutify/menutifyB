@@ -12,8 +12,8 @@ import {
   verifyExistJWTinHeaders
 } from '../middleware/checkJWT.js'
 //!--------uso Postman
-userRouter.get('/id', verifyExistJWT, userControllerFunctions.getUserById)
-
+userRouter.get('/', verifyExistJWT, userControllerFunctions.getUserById)
+userRouter.patch('/', verifyExistJWT, userControllerFunctions.patchUser)
 //!--------uso Postman
 // userRouter.put('/', userControllerFunctions.changeUserNewDetail)
 // //!--------uso Postman
