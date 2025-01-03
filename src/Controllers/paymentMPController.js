@@ -243,26 +243,25 @@ const webhookPayment = async (req, res) => {
             )
           } else {
             const { dataValues } = findSub
-            
+
             const { f_date: finalDatSub, id: id_sub } = dataValues
             const [nowDate, newEndDateSub] = datesStringForBD(finalDatSub)
-            
+
             await models.subs.update(
               { f_date: newEndDateSub },
               { where: { id: id_sub } }
             )
-  
+
             mailOptions = webhookPaymentMP(
               metadata,
               status_detail,
               idpayment,
-              nameUser.dataValues.name,
+              'Cliente Menutify',
               nowDate,
               newEndDateSub
             )
           }
-         
-  
+
           await transporter.sendMail(mailOptions)
         }
         break
