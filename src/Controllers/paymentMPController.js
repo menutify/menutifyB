@@ -209,41 +209,62 @@ const webhookPayment = async (req, res) => {
             }
 
           */
+          const findSub = await models.subs.findOne({ where: { id_user: id } })
+          let mailOptions
+          if (!findSub) {
+            //creamos la nueva sub
+            await models.subs.create(objectSub)
 
-          //creamos la nueva sub
-          await models.subs.create(objectSub)
+            //actualizamos los datos del usuario
+            await models.user.update(
+              { new: false, subActive: true },
+              { where: { id, email } }
+            )
 
-          //actualizamos los datos del usuario
-          await models.user.update(
-            { new: false, subActive: true },
-            { where: { id, email } }
-          )
+            //obtnemos el nombre del usuario
+            const nameUser = await models.user.findOne({
+              where: { id },
+              attributes: ['name'] // Selecciona solo la columna que necesitas
+            })
+            // envio de correo con factura del pago
 
-          //obtnemos el nombre del usuario
-          const nameUser = await models.user.findOne({
-            where: { id },
-            attributes: ['name'] // Selecciona solo la columna que necesitas
-          })
-          // envio de correo con factura del pago
-
-          // Notifica al cliente conectado por WebSocket
-          io.to(id).emit('paymentStatus', {
-            status,
-            status_detail
-          })
-
-          const mailOptions = webhookPaymentMP(
-            metadata,
-            status_detail,
-            idpayment,
-            nameUser.dataValues.name,
-            c_date,
-            f_date
-          )
-
+            // Notifica al cliente conectado por WebSocket
+            io.to(id).emit('paymentStatus', {
+              status,
+              status_detail
+            })
+            mailOptions = webhookPaymentMP(
+              metadata,
+              status_detail,
+              idpayment,
+              nameUser.dataValues.name,
+              c_date,
+              f_date
+            )
+          } else {
+            const { dataValues } = findSub
+            
+            const { f_date: finalDatSub, id: id_sub } = dataValues
+            const [nowDate, newEndDateSub] = datesStringForBD(finalDatSub)
+            
+            await models.subs.update(
+              { f_date: newEndDateSub },
+              { where: { id: id_sub } }
+            )
+  
+            mailOptions = webhookPaymentMP(
+              metadata,
+              status_detail,
+              idpayment,
+              nameUser.dataValues.name,
+              nowDate,
+              newEndDateSub
+            )
+          }
+         
+  
           await transporter.sendMail(mailOptions)
         }
-
         break
 
       case 'payment.pending':

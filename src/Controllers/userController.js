@@ -1,4 +1,3 @@
-import { error } from 'console'
 import { models } from '../Models/allModels.js'
 import bcrypt from 'bcryptjs'
 

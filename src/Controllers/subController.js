@@ -21,22 +21,38 @@ const getAllSubs = async (req, res) => {
 }
 
 const getOneSub = async (req, res) => {
-  const { id_user } = req.params
-  console.log(id_user)
+  const { id } = req.user
+  console.log('sub entry')
+  console.log({ id })
   try {
+    const { dataValues } = await models.subs.findOne({
+      where: { id_user: id },
+      include: [
+        {
+          model: models.user,
+          attributes: ['name', 'email'] // Ajusta los atributos necesarios
+        }
+      ]
+    })
+
+    if (!{ dataValues })
+      return res
+        .status(404)
+        .json({ error: true, msg: 'No se encontro la sub con su ID' })
+
+    // console.log({ mysub })
     res.status(200).json({
-      sub: await models.subs.findOne({
-        where: { id_user },
-        include: [
-          {
-            model: models.user,
-            attributes: ['name', 'email'] // Ajusta los atributos necesarios
-          }
-        ]
-      })
+      error: false,
+      msg: 'ok',
+      data: {
+        state: dataValues.state,
+        c_date: dataValues.c_date,
+        f_date: dataValues.f_date
+      }
     })
   } catch (error) {
-    res.status(400).json({ msg: 'error al obtener el registro', error })
+    console.log({ error })
+    res.status(500).json({ msg: 'error al obtener el registro', error })
   }
 }
 
