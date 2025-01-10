@@ -1,4 +1,3 @@
-import bcryptjs from 'bcryptjs'
 import { createJWT } from '../helper/JWT.js'
 import { setTokenToCookies } from '../helper/cookieManipulation.js'
 import { models } from '../Models/allModels.js'
@@ -40,9 +39,9 @@ export const verifyPassword = async (req, res, next) => {
   const { password: pasEntry } = req.body
   const { password } = req.user
 
-  const passwordCompare = bcryptjs.compareSync(pasEntry, password)
+ 
 
-  if (!passwordCompare) {
+  if (pasEntry !== password) {
     return res.status(401).json({
       msg: 'contraseña incorrecta',
       error: true

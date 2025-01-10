@@ -1,5 +1,5 @@
 import { models } from '../Models/allModels.js'
-import bcrypt from 'bcryptjs'
+
 
 const getUserById = async (req, res) => {
   try {
@@ -48,12 +48,6 @@ const patchUser = async (req, res) => {
     const { id } = req.user
 
     const data = req.body
-
-    console.log({ data })
-
-    if (data?.password) {
-      data.password = await bcrypt.hash(data.password, 10)
-    }
 
     await models.user.update(data, { where: { id } })
 

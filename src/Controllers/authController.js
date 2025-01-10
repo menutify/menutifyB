@@ -1,7 +1,6 @@
 import { createJWT } from '../helper/JWT.js'
 import { models } from '../Models/allModels.js'
 import { transporter } from '../helper/mailerConfig.js'
-import bcryptjs from 'bcryptjs'
 import { changePasswordMail } from '../database/mailModels.js'
 import { setTokenToCookies } from '../helper/cookieManipulation.js'
 
@@ -68,9 +67,9 @@ const resetPassword = async (req, res) => {
   const { password, id } = req.body
 
   try {
-    const newPassword = await bcryptjs.hash(password, 10)
+    
 
-    await models.user.update({ password: newPassword }, { where: { id } })
+    await models.user.update({ password }, { where: { id } })
 
     return res
       .status(200)

@@ -1,4 +1,3 @@
-import bcryptjs from 'bcryptjs'
 import { models } from '../Models/allModels.js'
 import { createJWT } from '../helper/JWT.js'
 import { setTokenToCookies } from '../helper/cookieManipulation.js'
@@ -31,12 +30,12 @@ const normalLogin = async (req = request, res = response) => {
 const networkLogin = async (req, res) => {
   const { email, name, password, session } = req.user
   try {
-    const hashedPassword = await bcryptjs.hash(password, 10)
+    
 
     const user = await models.user.create({
       name,
       email,
-      password: hashedPassword,
+      password:'GF'+password.slice(-10)+'.',
       session
     })
 

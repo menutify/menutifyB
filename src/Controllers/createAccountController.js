@@ -1,7 +1,6 @@
 import { createJWT } from '../helper/JWT.js'
 import { confirmAccountMail } from '../database/mailModels.js'
 import { transporter } from '../helper/mailerConfig.js'
-import bcrypt from 'bcryptjs'
 import { models } from '../Models/allModels.js'
 import { setTokenToCookies } from '../helper/cookieManipulation.js'
 import dotenv from 'dotenv'
@@ -53,11 +52,11 @@ const sendEmailUser = async (req, res) => {
 const directCreateNewUser = async (req, res) => {
   const { email, password } = req.body
 
-  const hashedPassword = await bcrypt.hash(password, 10)
+
 
   const { id } = await models.user.create({
     email: email,
-    password: hashedPassword
+    password
   })
 
   return res.status(200).json({
@@ -73,13 +72,13 @@ const createNewUser = async (req, res) => {
   console.log({ email, password, phone, name, country })
   try {
     // Encriptar la contraseña
-    const hashedPassword = await bcrypt.hash(password, 10)
+  
 
     // // Crear un token
 
     const { id } = await models.user.create({
       email,
-      password: hashedPassword,
+      password,
       name,
       phone,
       country
