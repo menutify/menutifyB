@@ -247,10 +247,15 @@ const webhookPayment = async (req, res) => {
             const { f_date: finalDatSub, id: id_sub } = dataValues
             const [nowDate, newEndDateSub] = datesStringForBD(finalDatSub)
 
+            //actualizamos la fecha del pago a 1 mes mas
             await models.subs.update(
               { f_date: newEndDateSub },
               { where: { id: id_sub } }
             )
+
+
+            //actualizamos el estado del restaurant a true nuevamente
+            await models.restaurant.update({state:true},{where:{id_user:id}})
 
             mailOptions = webhookPaymentMP(
               metadata,
