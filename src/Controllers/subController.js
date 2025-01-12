@@ -35,11 +35,14 @@ const getOneSub = async (req, res) => {
       ]
     })
 
-    if (!{ dataValues })
+    if (!dataValues ){
       return res
         .status(404)
-        .json({ error: true, msg: 'No se encontro la sub con su ID' })
+        .json({ error: true, msg: 'No se encontro la sub con su ID' })}
 
+    // cambiamos el state de restaurant si la sub esta vencida
+      await models.restaurant.update({state:dataValues.state},{where:{id_user:id}})
+    
     // console.log({ mysub })
     res.status(200).json({
       error: false,

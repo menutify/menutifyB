@@ -3,7 +3,7 @@ import { models } from '../Models/allModels.js'
 export const getMenu = async (req, res) => {
   const { domain } = req.params
   try {
-    const data = await models.menus.findOne({
+    const {dataValues} = await models.menus.findOne({
       where: { domain },
       attributes: { exclude: ['createdAt', 'updatedAt'] },
       include: [
@@ -34,7 +34,14 @@ export const getMenu = async (req, res) => {
       ]
     })
 
-    const dataValues = data.dataValues
+    const {id_restaurant}=dataValues
+
+    const getStateOfRest=await models.restaurant.findOne({where:{id:id_restaurant}})
+
+    //si la respuesta existe y el estado es falso, retornamnada
+    if(getStateOfRest && !getStateOfRest.dataValues.state){
+      return res.status(200).json({ error: false, msg: 'ok', data: {} })
+    }
 
     res.status(200).json({ error: false, msg: 'ok', data: dataValues })
   } catch (error) {
