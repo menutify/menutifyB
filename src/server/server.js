@@ -18,6 +18,11 @@ import menuRouter from '../routes/menu.routes.js'
 import catRouter from '../routes/cat.routes.js'
 import dragRouter from '../routes/drag.routes.js'
 import appRouter from '../routes/app.routes.js'
+
+//automatizar tareas con cron
+import cron from 'node-cron'
+import { Op } from 'sequelize'
+
 class Server {
   constructor() {
     const whitelist = [
@@ -44,6 +49,38 @@ class Server {
     this.initRoutes()
     this.initWebSocket()
     this.initDB()
+    this.initCronTask()
+  }
+
+  //cron
+  initCronTask(){
+    // Configuración de la tarea cron
+    // para media noche todos los dias -> 0 0 0 * * *
+    // para cada minuto -> * * * * *
+cron.schedule('* * * * *', async() => {
+  console.log('Iniciando tarea para verificar suscripciones vencidas:', new Date());
+  try {
+    // Obtener la fecha actual
+    const today = new Date();
+
+    // Actualizar el estado de las subscripciones vencidas
+    const [updatedRows] = await models.subs.update(
+        { state: false }, // Cambia el estado a false
+        {
+            where: {
+                f_date: {
+                    [Op.lt]: today, // Fecha de vencimiento menor a la actual
+                },
+                state:true
+            },
+        }
+    );
+
+    console.log(`Tarea completada. Suscripciones vencidas: ${updatedRows}`);
+} catch (error) {
+    console.error('Error al verificar las suscripciones:', error);
+}
+});
   }
 
   //--------------------------------------------------------------------------
