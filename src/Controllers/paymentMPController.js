@@ -242,14 +242,27 @@ const webhookPayment = async (req, res) => {
               f_date
             )
           } else {
+            //Si la Subcripcion alguna vez existio
             const { dataValues } = findSub
 
-            const { f_date: finalDatSub, id: id_sub } = dataValues
-            const [nowDate, newEndDateSub] = datesStringForBD(finalDatSub)
+            //se obtiene el id, la fecha de vencimiento y el estado
+            const { f_date: finalDatSub, id: id_sub,state:finalState } = dataValues
 
-            //actualizamos la fecha del pago a 1 mes mas
+            let initDateForSub
+
+            //si el estado es T -> tomamos fecha de vencimiento de la sub para sumar mas dias
+            //si el estado es F ->  tomamos la fecha de cuando se creo el pago para sumar los dias
+            if(finalState){
+              initDateForSub = finalDatSub
+            }else{
+              initDateForSub=date_created
+            }
+
+            const [nowDate, newEndDateSub] = datesStringForBD(initDateForSub)
+
+            //actualizamos la fecha del pago a 1 mes mas y colocamos el estado en true para evitar percances de que el estado sea false
             await models.subs.update(
-              { f_date: newEndDateSub },
+              { f_date: newEndDateSub,state:true },
               { where: { id: id_sub } }
             )
 
